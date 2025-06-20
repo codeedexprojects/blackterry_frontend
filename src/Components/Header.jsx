@@ -5,7 +5,10 @@ import {
   FaShoppingBag,
   FaChevronLeft,
   FaChevronRight,
+  FaRegUser,
 } from 'react-icons/fa';
+import { GrFavorite } from 'react-icons/gr';
+import { IoBagHandleOutline, IoSearchSharp } from 'react-icons/io5';
 
 const Header = () => {
   return (
@@ -54,10 +57,10 @@ const Header = () => {
 
         {/* Icons */}
         <div className="flex gap-4 mt-2 sm:mt-0 text-lg text-black">
-          <FaSearch className="cursor-pointer hover:text-[#D9CEBF]" />
-          <FaUser className="cursor-pointer hover:text-[#D9CEBF]" />
-          <FaHeart className="cursor-pointer hover:text-[#D9CEBF]" />
-          <FaShoppingBag className="cursor-pointer hover:text-[#D9CEBF]" />
+          <IoSearchSharp className="cursor-pointer hover:text-[#D9CEBF]" />
+          <FaRegUser className="cursor-pointer hover:text-[#D9CEBF]" />
+          <GrFavorite className="cursor-pointer hover:text-[#D9CEBF]" />
+          <IoBagHandleOutline className="cursor-pointer hover:text-[#D9CEBF]" />
         </div>
       </div>
     </header>

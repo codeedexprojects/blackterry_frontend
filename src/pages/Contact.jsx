@@ -7,100 +7,101 @@ function Contact() {
     <div>
       <Header />
 
-      <div className="container mt-5">
+      <div className="container mt-5 px-3">
         {/* Contact Heading */}
         <h3
+          className="mb-4"
           style={{
             color: "#50311D",
             textAlign: "left",
-            marginLeft: "340px",
-            marginBottom: "1rem",
           }}
         >
           Contact
         </h3>
 
-        {/* Centered Form Section */}
-        <div
-          className="mx-auto d-flex flex-column align-items-center"
-          style={{ maxWidth: "850px" }}
-        >
-          <div className="d-flex flex-wrap gap-3 mb-3 justify-content-center w-100">
-            <input
-              type="text"
-              placeholder="Name"
-              className="form-control"
-              style={{
-                padding: "15px",
-                maxWidth: "300px",
-                minWidth: "150px",
-                border: "1px solid #50311D",
-              }}
-            />
-            <input
-              type="text"
-              placeholder="Email"
-              className="form-control"
-              style={{
-                padding: "15px",
-                maxWidth: "300px",
-                minWidth: "150px",
-                border: "1px solid #50311D",
-              }}
-            />
-          </div>
+        {/* Form Section */}
+        <div className="row justify-content-center">
+          <div className="col-lg-10 col-md-12">
+            <div className="row g-3 mb-3">
+              <div className="col-md-6">
+                <input
+                  type="text"
+                  placeholder="Name"
+                  className="form-control"
+                  style={{
+                    padding: "15px",
+                    border: "1px solid #50311D",
+                  }}
+                />
+              </div>
+              <div className="col-md-6">
+                <input
+                  type="text"
+                  placeholder="Email"
+                  className="form-control"
+                  style={{
+                    padding: "15px",
+                    border: "1px solid #50311D",
+                  }}
+                />
+              </div>
+            </div>
 
-          <div className="mb-3 w-100 d-flex justify-content-center">
-            <input
-              type="text"
-              placeholder="Phone"
-              className="form-control"
-              style={{
-                padding: "15px",
-                maxWidth: "620px",
-                border: "1px solid #50311D",
-              }}
-            />
-          </div>
+            <div className="mb-3">
+              <input
+                type="text"
+                placeholder="Phone"
+                className="form-control"
+                style={{
+                  padding: "15px",
+                  border: "1px solid #50311D",
+                }}
+              />
+            </div>
 
-          <div className="mb-3 w-100 d-flex justify-content-center">
-            <input
-              type="Message"
-              placeholder="Message"
-              className="form-control"
-              style={{
-                padding: "30px",
-                maxWidth: "620px",
-                border: "1px solid #50311D",
-              }}
-            />
-          </div>
-        </div>
+            <div className="mb-3">
+              <textarea
+                placeholder="Message"
+                className="form-control"
+                rows={4}
+                style={{
+                  padding: "15px",
+                  border: "1px solid #50311D",
+                }}
+              ></textarea>
+            </div>
 
-        {/* Send Button - Left Aligned */}
-        <div>
-          <button
-            style={{
-              backgroundColor: "#50311D",
-              color: "white",
-              padding: "8px 20px",
-              border: "1px solid #50311D",
-              borderRadius: "10px",
-              marginLeft: "340px",
-              width: "150px",
-            }}
-          >
-            Send
-          </button>
+            {/* Send Button */}
+            <div className="text-start">
+              <button
+                style={{
+                  backgroundColor: "#50311D",
+                  color: "white",
+                  padding: "10px 25px",
+                  border: "1px solid #50311D",
+                  borderRadius: "10px",
+                }}
+              >
+                Send
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
+      {/* Brand Name */}
       <h1
-        className="name ms-5 mt-5 text-center"
-        style={{ color: "#50311D", fontSize: "160px", fontWeight: "bold" }}
+        className="text-center mt-5"
+        style={{
+          color: "#50311D",
+          fontSize: "10vw",
+          fontWeight: "bold",
+          wordBreak: "break-word",
+        }}
       >
         BLACKTERRY
       </h1>
+
       <Footer />
     </div>
   );
