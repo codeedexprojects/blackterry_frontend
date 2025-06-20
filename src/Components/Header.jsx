@@ -9,6 +9,7 @@ import {
 } from 'react-icons/fa';
 import { GrFavorite } from 'react-icons/gr';
 import { IoBagHandleOutline, IoSearchSharp } from 'react-icons/io5';
+import { Link } from 'react-router-dom';
 
 const Header = () => {
   return (
@@ -25,25 +26,25 @@ const Header = () => {
         {/* Left menu */}
         <nav className="flex gap-6 text-sm mb-2 sm:mb-0">
           <a
-            href="#"
+            href="/"
             className="text-black hover:text-[#D9CEBF] text-decoration-none transition-colors"
           >
             NEW
           </a>
           <a
-            href="#"
+            href="/shop"
             className="text-black hover:text-[#D9CEBF]  text-decoration-none transition-colors"
           >
             SHOP
           </a>
           <a
-            href="#"
+            href="/about"
             className="text-black hover:text-[#D9CEBF]  text-decoration-none transition-colors"
           >
             ABOUT
           </a>
           <a
-            href="#"
+            href="/contact"
             className="text-black hover:text-[#D9CEBF]  text-decoration-none transition-colors"
           >
             CONTACT
@@ -55,13 +56,35 @@ const Header = () => {
           BLACK TERRY
         </h1>
 
-        {/* Icons */}
-        <div className="flex gap-4 mt-2 sm:mt-0 text-lg text-black">
-          <IoSearchSharp className="cursor-pointer hover:text-[#D9CEBF]" />
-          <FaRegUser className="cursor-pointer hover:text-[#D9CEBF]" />
-          <GrFavorite className="cursor-pointer hover:text-[#D9CEBF]" />
-          <IoBagHandleOutline className="cursor-pointer hover:text-[#D9CEBF]" />
+        <div className="flex gap-4 mt-2 sm:mt-0 text-lg">
+          <Link
+            to="/search"
+            className="text-black hover:text-[#D9CEBF] transition-colors"
+          >
+            <IoSearchSharp className="cursor-pointer" />
+          </Link>
+          
+          <Link
+            to="/wishlist"
+            className="text-black hover:text-[#D9CEBF] transition-colors"
+          >
+            <GrFavorite className="cursor-pointer" />
+          </Link>
+          <Link
+            to="/cart"
+            className="text-black hover:text-[#D9CEBF] transition-colors"
+          >
+            <IoBagHandleOutline className="cursor-pointer" />
+          </Link>
+          <Link
+            to="/profile"
+            className="text-black hover:text-[#D9CEBF] transition-colors"
+          >
+            <FaRegUser className="cursor-pointer" />
+          </Link>
         </div>
+
+
       </div>
     </header>
   );

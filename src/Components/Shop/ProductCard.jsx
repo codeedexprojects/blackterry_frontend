@@ -1,25 +1,10 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { FaHeart } from "react-icons/fa";
-import AOS from "aos";
-import "aos/dist/aos.css"; // Import AOS styles
 
-const ProductCard = ({ product }) => {
-  // Initialize AOS when component mounts
-  useEffect(() => {
-    AOS.init({
-      duration: 800, // Animation duration
-      once: true, // Whether animation should happen only once
-    });
-  }, []);
-
+const ShopProductCard = ({ product }) => {
   return (
-    <div 
-      className="col-12 col-sm-6 col-md-4 px-1 mb-2"
-      data-aos="fade-up" // Base animation
-      data-aos-delay={product.id % 3 * 100} // Stagger delay based on product id
-      data-aos-easing="ease-out-cubic" // Smooth easing
-    >
+    <div className="col-12 col-sm-6 col-md-4 px-1 mb-2">
       <Link
         to={`/details/${product.id}`}
         className="text-decoration-none text-dark group"
@@ -32,16 +17,11 @@ const ProductCard = ({ product }) => {
               alt={product.name}
               className="w-100 img-fluid transform group-hover:scale-105 transition-transform duration-300 ease-in-out"
               style={{ height: "400px", objectFit: "cover" }}
-              data-aos="zoom-in" // Additional image animation
             />
           </div>
 
           {/* Heart Icon */}
-          <div 
-            className="absolute bottom-2 right-2"
-            data-aos="fade-left" // Separate animation for heart icon
-            data-aos-delay="300" // Slight delay
-          >
+          <div className="absolute bottom-2 right-2">
             <div className="w-10 h-10 rounded-full bg-[#5e3b25] flex items-center justify-center transition-transform group-hover:scale-110">
               <FaHeart color="white" size={16} />
             </div>
@@ -49,11 +29,7 @@ const ProductCard = ({ product }) => {
         </div>
 
         {/* Product Info */}
-        <div 
-          className="pt-2 pb-2 text-center"
-          data-aos="fade-up" // Text animation
-          data-aos-delay="200" // Slight delay
-        >
+        <div className="pt-2 pb-2 text-center">
           <p className="mb-0 font-medium group-hover:text-[#5e3b25] transition-colors duration-200">
             {product.name} • {product.subtitle}
           </p>
@@ -64,4 +40,4 @@ const ProductCard = ({ product }) => {
   );
 };
 
-export default ProductCard;
+export default ShopProductCard;
