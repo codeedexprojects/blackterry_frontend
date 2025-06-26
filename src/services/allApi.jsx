@@ -34,6 +34,34 @@ export const userLogin = async (reqBody) => {
     }
 };
 
+export const getProfile = async (id) => {
+    try {
+        const token = localStorage.getItem('userToken');
+        const response = await axios.get(`${BASE_URL}${API_ENDPOINTS.PROFILE}/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return response;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export const updateProfile = async (reqBody, id) => {
+    try {
+        const token = localStorage.getItem('userToken');
+        const response = await axios.get(`${BASE_URL}${API_ENDPOINTS.PROFILE}/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return response;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
 export const addAddress = async (reqBody) => {
     try {
         const token = localStorage.getItem('userToken');
@@ -62,7 +90,7 @@ export const getAddress = async (id) => {
     }
 };
 
-export const updateAddress = async (reqBody , id) => {
+export const updateAddress = async (reqBody, id) => {
     try {
         const token = localStorage.getItem('userToken');
         const response = await axios.patch(`${BASE_URL}${API_ENDPOINTS.USER_ADDRESS}/${id}`, reqBody, {
@@ -76,7 +104,7 @@ export const updateAddress = async (reqBody , id) => {
     }
 };
 
-export const deleteAddress = async (reqBody , id) => {
+export const deleteAddress = async (reqBody, id) => {
     try {
         const token = localStorage.getItem('userToken');
         const response = await axios.delete(`${BASE_URL}${API_ENDPOINTS.USER_ADDRESS}/${id}`, reqBody, {
@@ -110,7 +138,7 @@ export const getProductById = async (id) => {
 
 export const addToWishlist = async (reqBody) => {
     try {
-        const response = await axios.post(`${BASE_URL}${API_ENDPOINTS.WISHLIST}`,reqBody);
+        const response = await axios.post(`${BASE_URL}${API_ENDPOINTS.WISHLIST}`, reqBody);
         return response;
     } catch (error) {
         console.log(error);
@@ -119,7 +147,7 @@ export const addToWishlist = async (reqBody) => {
 
 export const removeWishlist = async (reqBody) => {
     try {
-        const response = await axios.delete(`${BASE_URL}${API_ENDPOINTS.WISHLIST}`,reqBody);
+        const response = await axios.delete(`${BASE_URL}${API_ENDPOINTS.WISHLIST}`, reqBody);
         return response;
     } catch (error) {
         console.log(error);
@@ -138,7 +166,52 @@ export const getWishlist = async (id) => {
 export const addToCart = async (reqBody) => {
     try {
         const token = localStorage.getItem('userToken');
-        const response = await axios.post(`${BASE_URL}${API_ENDPOINTS.USER_ADDRESS}`, reqBody, {
+        const response = await axios.post(`${BASE_URL}${API_ENDPOINTS.CART}/add`, reqBody, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return response;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export const updateCart = async (reqBody) => {
+    try {
+        const token = localStorage.getItem('userToken');
+        const response = await axios.patch(`${BASE_URL}${API_ENDPOINTS.CART}/update`, reqBody, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return response;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export const deletCart = async (productData) => {
+    try {
+        const token = localStorage.getItem('userToken');
+        const response = await axios.delete(`${BASE_URL}${API_ENDPOINTS.CART}/remove`, {
+            data: productData,
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        return response;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
+export const getCart = async (id) => {
+    try {
+        const token = localStorage.getItem('userToken');
+        const response = await axios.get(`${BASE_URL}${API_ENDPOINTS.CART}/view-cart/${id}`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }

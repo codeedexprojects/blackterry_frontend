@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Pencil, Info, Trash2 } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Header from "/src/Components/Header";
-import { deleteAddress, getAddress } from '../services/allApi';
+import { deleteAddress, getAddress, getProfile } from '../services/allApi';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -11,34 +11,49 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [user, setUser] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(true);
 
   useEffect(() => {
-    const fetchAddresses = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
+        setProfileLoading(true);
+        
         const userId = localStorage.getItem('userId');
-        const response = await getAddress(userId);
-        if (response.data) {
-          setAddresses(response.data);
+        
+        // Fetch user profile
+        const profileResponse = await getProfile(userId);
+        if (profileResponse.data) {
+          setUser(profileResponse.data.user);
+        }
+        
+        // Fetch addresses
+        const addressResponse = await getAddress(userId);
+        if (addressResponse.data) {
+          setAddresses(addressResponse.data);
+        }
+
+        if (location.state?.success) {
+          setSuccess(location.state.success);
+          setTimeout(() => setSuccess(''), 3000);
         }
       } catch (error) {
-        setError('Failed to load addresses');
+        setError('Failed to load profile data');
+        console.error('Error:', error);
       } finally {
         setLoading(false);
+        setProfileLoading(false);
       }
     };
 
-    if (location.state?.success) {
-      setSuccess(location.state.success);
-      setTimeout(() => setSuccess(''), 3000);
-    }
-
-    fetchAddresses();
+    fetchData();
   }, [location.state]);
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userId');
+    localStorage.removeItem('userToken');
     navigate('/login');
   };
 
@@ -80,16 +95,26 @@ const Profile = () => {
 
         {/* Name & Email Section */}
         <div className="bg-gray-100 rounded-lg p-4 space-y-1">
-          <div className="flex items-center justify-between">
-            <span className="text-lg font-medium">Name</span>
-            <button className="text-gray-500 hover:text-black">
-              <Pencil className="w-4 h-4" />
-            </button>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">E-mail</p>
-            <p className="text-sm text-gray-700">bill.sanders@example.com</p>
-          </div>
+          {profileLoading ? (
+            <div className="flex justify-center py-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
+            </div>
+          ) : user ? (
+            <>
+              <div className="flex items-center justify-between">
+                <span className="text-lg font-medium">{user.name}</span>
+                <button className="text-gray-500 hover:text-black">
+                  <Pencil className="w-4 h-4" />
+                </button>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Phone Number</p>
+                <p className="text-sm text-gray-700">{user.phone}</p>
+              </div>
+            </>
+          ) : (
+            <div className="text-sm text-gray-500">No profile data available</div>
+          )}
         </div>
 
         {/* Address Section */}
