@@ -1,9 +1,40 @@
 import React from "react";
 
-const RecommendedProducts = ({ products }) => {
+// Dummy T-shirt product data
+const dummyProducts = [
+  {
+    id: 1,
+    name: "Classic White T-Shirt",
+    price: "₹499",
+    image: "https://via.placeholder.com/300x300.png?text=White+T-Shirt",
+  },
+  {
+    id: 2,
+    name: "Black Oversized Tee",
+    price: "₹599",
+    image: "https://via.placeholder.com/300x300.png?text=Black+T-Shirt",
+  },
+  {
+    id: 3,
+    name: "Graphic Streetwear Tee",
+    price: "₹699",
+    image: "https://via.placeholder.com/300x300.png?text=Graphic+Tee",
+  },
+  {
+    id: 4,
+    name: "Vintage Wash Tee",
+    price: "₹649",
+    image: "https://via.placeholder.com/300x300.png?text=Vintage+T-Shirt",
+  },
+ 
+];
+
+const RecommendedProducts = ({ products = dummyProducts }) => {
   return (
     <div className="recommended-section mt-5 pt-4 border-top">
-      <h3 className="mb-4 fw-bold text-center text-md-start">FIND YOUR NEXT FAVORITE</h3>
+      <h3 className="mb-4 fw-bold text-center text-md-start">
+        FIND YOUR NEXT FAVORITE TEE
+      </h3>
       <div className="row g-4">
         {products.map((product) => (
           <div key={product.id} className="col-6 col-md-3">

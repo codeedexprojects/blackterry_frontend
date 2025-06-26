@@ -19,6 +19,9 @@ import Orders from './pages/Orders'
 import SizeChart from './pages/SizeChart'
 import Dashboard from './Admin/Pages/Dashboard'
 import AdminLogin from './Admin/Pages/AdminLogin'
+import Register from './pages/Register'
+import AddAddress from './pages/AddAddress'
+import { CustomToastContainer } from './Components/CustomeToast'
 
 function App() {
 
@@ -40,12 +43,16 @@ function App() {
         <Route path='/size-chart' element={<SizeChart />} />
         <Route path='/orders' element={<Orders />} />
         <Route path='/checkout' element={<CheckoutPage />} />
+        <Route path='/register' element={<Register />} />
+        <Route path='/add-address' element={<AddAddress />} />
+
 
         <Route path="/admin/*" element={<Dashboard />} />
         <Route path="/admin/login" element={< AdminLogin />} />
 
 
       </Routes>
+       <CustomToastContainer />
       {/* <Footer/> */}
     </>
   )
