@@ -221,3 +221,73 @@ export const getCart = async (id) => {
         console.log(error);
     }
 };
+
+export const createCheckout = async (reqBody) => {
+    try {
+        const token = localStorage.getItem('userToken');
+        const response = await axios.post(`${BASE_URL}${API_ENDPOINTS.CHECKOUT}`, reqBody, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return response;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export const getCheckout = async (checkoutId) => {
+    try {
+        const token = localStorage.getItem('userToken');
+        const response = await axios.get(`${BASE_URL}${API_ENDPOINTS.CHECKOUT}/${checkoutId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return response;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export const placeOrder = async (reqBody) => {
+    try {
+        const token = localStorage.getItem('userToken');
+        const response = await axios.post(`${BASE_URL}${API_ENDPOINTS.ORDER}/confirm`, reqBody, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return response;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export const orderById = async (orderId) => {
+    try {
+        const token = localStorage.getItem('userToken');
+        const response = await axios.get(`${BASE_URL}${API_ENDPOINTS.ORDER}/${orderId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return response;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export const allOrders = async (id) => {
+    try {
+        const token = localStorage.getItem('userToken');
+        const response = await axios.get(`${BASE_URL}${API_ENDPOINTS.ORDER}/user/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return response;
+    } catch (error) {
+        console.log(error);
+    }
+};

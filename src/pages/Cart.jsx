@@ -3,7 +3,7 @@ import { MdDelete } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import Header from "/src/Components/Header";
 import Footer from "/src/Components/Footer";
-import { deletCart, getCart, updateCart } from "../services/allApi";
+import { createCheckout, deletCart, getCart, updateCart } from "../services/allApi";
 
 function Cart() {
   const navigate = useNavigate();
@@ -11,9 +11,9 @@ function Cart() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [cartData, setCartData] = useState(null);
-  const [updatingItems, setUpdatingItems] = useState(new Set()); 
+  const [updatingItems, setUpdatingItems] = useState(new Set());
 
-  const userId = localStorage.getItem('userId'); 
+  const userId = localStorage.getItem('userId');
 
   useEffect(() => {
     const fetchCartData = async () => {
@@ -27,7 +27,7 @@ function Cart() {
         const response = await getCart(userId);
         const cart = response.data;
         setCartData(cart);
-        
+
         const transformedItems = cart.items.map(item => ({
           id: item._id,
           name: item.productId.title,
@@ -36,11 +36,11 @@ function Cart() {
           size: item.size,
           color: item.color,
           quantity: item.quantity,
-          image: item.productId.images?.[0] || "/src/assets/shirt1.jpg", 
+          image: item.productId.images?.[0] || "/src/assets/shirt1.jpg",
           productId: item.productId._id,
           features: item.features
         }));
-        
+
         setCartItems(transformedItems);
       } catch (err) {
         setError("Failed to load cart data");
@@ -57,46 +57,64 @@ function Cart() {
     navigate("/");
   };
 
-  const handleCheckout = () => {
-    navigate("/checkout");
+  const handleCheckout = async () => {
+    const userId = localStorage.getItem('userId'); 
+    const reqBody = {
+      userId: userId, // payload for API
+    }
+    try {
+      const response = await createCheckout(reqBody);
+      if (response && response.status === 201) {
+         const checkoutId = response.data.checkoutId;
+         navigate("/checkout", {
+        state: {
+          checkoutId: checkoutId,
+        },
+      });
+      } else {
+        console.error('Checkout creation failed:', response);
+      }
+    } catch (err) {
+      console.error('Error during checkout:', err);
+    }
   };
 
   const updateQuantity = async (id, newQuantity) => {
     if (newQuantity < 1) return;
-    
+
     const item = cartItems.find(item => item.id === id);
     if (!item) return;
 
     setUpdatingItems(prev => new Set([...prev, id]));
 
     try {
-      setCartItems(cartItems.map(item => 
-        item.id === id ? {...item, quantity: newQuantity} : item
+      setCartItems(cartItems.map(item =>
+        item.id === id ? { ...item, quantity: newQuantity } : item
       ));
 
       const reqBody = {
         userId: userId,
         productId: item.productId,
-        quantity: newQuantity, 
+        quantity: newQuantity,
         color: item.color,
         size: item.size
       };
 
       const response = await updateCart(reqBody);
-      
+
       if (!response || response.status !== 200) {
         throw new Error('Failed to update cart');
       }
 
     } catch (error) {
       console.error("Error updating quantity:", error);
-      
-      setCartItems(cartItems.map(item => 
-        item.id === id ? {...item, quantity: item.quantity} : item
+
+      setCartItems(cartItems.map(item =>
+        item.id === id ? { ...item, quantity: item.quantity } : item
       ));
-      
+
       setError("Failed to update item quantity. Please try again.");
-      
+
       setTimeout(() => setError(null), 3000);
     } finally {
       setUpdatingItems(prev => {
@@ -108,43 +126,43 @@ function Cart() {
   };
 
   const removeItem = async (id) => {
-  const item = cartItems.find(item => item.id === id);
-  if (!item) return;
+    const item = cartItems.find(item => item.id === id);
+    if (!item) return;
 
-  setUpdatingItems(prev => new Set([...prev, id]));
+    setUpdatingItems(prev => new Set([...prev, id]));
 
-  try {
-    setCartItems(cartItems.filter(item => item.id !== id));
+    try {
+      setCartItems(cartItems.filter(item => item.id !== id));
 
-    const productData = {
-      userId: userId,
-      productId: item.productId,
-      color: item.color,
-      size: item.size
-    };
+      const productData = {
+        userId: userId,
+        productId: item.productId,
+        color: item.color,
+        size: item.size
+      };
 
-    const response = await deletCart(productData);
-    
-    if (!response || response.status !== 200) {
-      throw new Error('Failed to remove item');
+      const response = await deletCart(productData);
+
+      if (!response || response.status !== 200) {
+        throw new Error('Failed to remove item');
+      }
+
+    } catch (error) {
+      console.error("Error removing item:", error);
+
+      setCartItems(prevItems => [...prevItems, item].sort((a, b) => a.id.localeCompare(b.id)));
+
+      setError("Failed to remove item. Please try again.");
+
+      setTimeout(() => setError(null), 3000);
+    } finally {
+      setUpdatingItems(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
     }
-
-  } catch (error) {
-    console.error("Error removing item:", error);
-    
-    setCartItems(prevItems => [...prevItems, item].sort((a, b) => a.id.localeCompare(b.id)));
-    
-    setError("Failed to remove item. Please try again.");
-    
-    setTimeout(() => setError(null), 3000);
-  } finally {
-    setUpdatingItems(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(id);
-      return newSet;
-    });
-  }
-};
+  };
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
@@ -173,7 +191,7 @@ function Cart() {
           <div className="text-center">
             <h3 className="text-danger mb-3">Error</h3>
             <p>{error}</p>
-            <button 
+            <button
               className="btn btn-primary"
               onClick={() => window.location.reload()}
             >
@@ -195,9 +213,9 @@ function Cart() {
           {error && (
             <div className="alert alert-danger alert-dismissible fade show" role="alert">
               {error}
-              <button 
-                type="button" 
-                className="btn-close" 
+              <button
+                type="button"
+                className="btn-close"
                 onClick={() => setError(null)}
                 aria-label="Close"
               ></button>
@@ -225,7 +243,7 @@ function Cart() {
               {/* Cart Items */}
               <div className="mb-4">
                 {cartItems.map((item) => (
-                  <CartItem 
+                  <CartItem
                     key={item.id}
                     item={item}
                     updateQuantity={updateQuantity}
@@ -279,7 +297,6 @@ function Cart() {
   );
 }
 
-// Reusable Empty Cart Component
 const EmptyCart = ({ handleLogin }) => (
   <div className="d-flex flex-column align-items-center text-center py-5 my-5">
     <h2 className="fw-bold mb-4">YOUR CART IS EMPTY</h2>
@@ -327,7 +344,7 @@ const CartItem = ({ item, updateQuantity, removeItem, isUpdating }) => (
           <div>
             <h6 className="fw-semibold mb-1">{item.name}</h6>
             <p className="mb-1 fw-bold">
-              ₹{item.price} 
+              ₹{item.price}
               {item.originalPrice > item.price && (
                 <del className="text-muted fw-normal ms-2">₹{item.originalPrice}</del>
               )}
@@ -342,7 +359,7 @@ const CartItem = ({ item, updateQuantity, removeItem, isUpdating }) => (
               </div>
             )}
             <div className="d-md-none">
-              <QuantityControls 
+              <QuantityControls
                 quantity={item.quantity}
                 onDecrease={() => updateQuantity(item.id, item.quantity - 1)}
                 onIncrease={() => updateQuantity(item.id, item.quantity + 1)}
@@ -356,7 +373,7 @@ const CartItem = ({ item, updateQuantity, removeItem, isUpdating }) => (
 
       {/* Quantity Controls (Desktop) */}
       <div className="col-md-3 d-none d-md-flex align-items-center justify-content-center">
-        <QuantityControls 
+        <QuantityControls
           quantity={item.quantity}
           onDecrease={() => updateQuantity(item.id, item.quantity - 1)}
           onIncrease={() => updateQuantity(item.id, item.quantity + 1)}
@@ -394,7 +411,7 @@ const CartItem = ({ item, updateQuantity, removeItem, isUpdating }) => (
 const QuantityControls = ({ quantity, onDecrease, onIncrease, onRemove, disabled = false }) => (
   <div className="d-flex align-items-center">
     <div className="d-flex align-items-center border rounded">
-      <button 
+      <button
         className="btn px-2 py-1"
         onClick={onDecrease}
         disabled={disabled}
@@ -403,7 +420,7 @@ const QuantityControls = ({ quantity, onDecrease, onIncrease, onRemove, disabled
         -
       </button>
       <span className="px-2">{quantity}</span>
-      <button 
+      <button
         className="btn px-2 py-1"
         onClick={onIncrease}
         disabled={disabled}
@@ -412,7 +429,7 @@ const QuantityControls = ({ quantity, onDecrease, onIncrease, onRemove, disabled
         +
       </button>
     </div>
-    <button 
+    <button
       className="btn p-1 ms-2 text-danger"
       onClick={onRemove}
       disabled={disabled}

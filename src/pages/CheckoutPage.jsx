@@ -1,75 +1,159 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { CreditCard, Lock, MapPin, Plus, Check } from "lucide-react";
 import tshirt2 from "/src/assets/tshirt7.jpg";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Header from "/src/Components/Header";
 import Footer from "/src/Components/Footer";
+import { getAddress, getCheckout, placeOrder } from "../services/allApi";
 
 function CheckoutPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { checkoutId } = location.state || {};
+  const [checkoutData, setCheckoutData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [addresses, setAddresses] = useState([]);
+  const [addressLoading, setAddressLoading] = useState(true);
   const [selectedAddress, setSelectedAddress] = useState(null);
-  const [showAddAddressForm, setShowAddAddressForm] = useState(false);
+  const [email, setEmail] = useState("");
 
-  // Sample existing addresses
-  const [addresses, setAddresses] = useState([
-    {
-      id: 1,
-      name: "John Doe",
-      street: "123 Main Street",
-      city: "Mumbai",
-      state: "Maharashtra",
-      zip: "400001",
-      phone: "9876543210",
-      isDefault: true
-    },
-    {
-      id: 2,
-      name: "John Doe",
-      street: "456 Park Avenue",
-      city: "Bangalore",
-      state: "Karnataka",
-      zip: "560001",
-      phone: "9876543210",
-      isDefault: false
-    }
-  ]);
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!checkoutId) {
+        setError("No checkout ID provided");
+        setLoading(false);
+        return;
+      }
+      try {
+        setLoading(true);
+        const checkoutResponse = await getCheckout(checkoutId);
+        setCheckoutData(checkoutResponse.data.checkout);
+        if (checkoutResponse.data.checkout.userId?.email) {
+          setEmail(checkoutResponse.data.checkout.userId.email);
+        }
+        const userId = localStorage.getItem('userId');
+        if (userId) {
+          setAddressLoading(true);
+          const addressResponse = await getAddress(userId);
+          setAddresses(addressResponse.data || []);
+          const defaultAddress = addressResponse.data.find(addr => addr.defaultAddress);
+          if (defaultAddress) {
+            setSelectedAddress(defaultAddress);
+          }
+        }
+        setError(null);
+      } catch (err) {
+        setError("Failed to load checkout data");
+        console.error("Error fetching data:", err);
+      } finally {
+        setLoading(false);
+        setAddressLoading(false);
+      }
+    };
+    fetchData();
+  }, [checkoutId]);
 
-  const [newAddress, setNewAddress] = useState({
-    name: "",
-    street: "",
-    city: "",
-    state: "",
-    zip: "",
-    phone: ""
-  });
-
-  const handlePay = () => {
+  const handlePay = async () => {
     if (!selectedAddress) {
       alert("Please select a delivery address");
       return;
     }
-    navigate("/order");
+    if (!email) {
+      alert("Please enter your email");
+      return;
+    }
+
+    try {
+      const userId = localStorage.getItem('userId');
+      if (!userId) {
+        alert("Please log in to place an order");
+        return;
+      }
+
+      const reqBody = {
+        userId: userId,
+        addressId: selectedAddress._id,
+        checkoutId: checkoutId
+      };
+
+      const response = await placeOrder(reqBody);
+
+      if (response && response.data) {
+        // Navigate to order confirmation page with order details
+        navigate("/order-confirmation", {
+          state: {
+            orderId: response.data._id,
+            orderDetails: response.data
+          }
+        });
+      } else {
+        throw new Error("Failed to place order");
+      }
+    } catch (error) {
+      console.error("Error placing order:", error);
+      alert("Failed to place order. Please try again.");
+    }
   };
 
   const handleAddressSelect = (address) => {
     setSelectedAddress(address);
   };
 
-  const handleAddAddress = () => {
-    const newId = addresses.length + 1;
-    setAddresses([...addresses, { ...newAddress, id: newId, isDefault: false }]);
-    setSelectedAddress(newId);
-    setShowAddAddressForm(false);
-    setNewAddress({
-      name: "",
-      street: "",
-      city: "",
-      state: "",
-      zip: "",
-      phone: ""
+  const handleAddNewAddress = () => {
+    navigate("/add-address", {
+      state: { fromCheckout: true, checkoutId }
     });
   };
+
+  const calculateTotals = () => {
+    if (!checkoutData) return { subtotal: 0, shipping: 0, taxes: 0, total: 0 };
+    const subtotal = checkoutData.totalPrice || 0;
+    const shipping = 0;
+    const taxes = 0;
+    const discount = checkoutData.discountedPrice || 0;
+    const total = subtotal - discount + shipping + taxes;
+    return { subtotal, shipping, taxes, discount, total };
+  };
+
+  const { subtotal, shipping, taxes, discount, total } = calculateTotals();
+
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <div className="container-fluid mt-5 d-flex justify-content-center align-items-center" style={{ minHeight: "400px" }}>
+          <div className="text-center">
+            <div className="spinner-border" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+            <p className="mt-3">Loading checkout data...</p>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
+  if (error) {
+    return (
+      <>
+        <Header />
+        <div className="container-fluid mt-5 d-flex justify-content-center align-items-center" style={{ minHeight: "400px" }}>
+          <div className="text-center">
+            <div className="alert alert-danger" role="alert">
+              {error}
+            </div>
+            <button className="btn btn-primary" onClick={() => navigate(-1)}>
+              Go Back
+            </button>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
@@ -110,6 +194,8 @@ function CheckoutPage() {
                   type="email"
                   className="form-control form-control-lg"
                   placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               <div className="form-check">
@@ -128,115 +214,67 @@ function CheckoutPage() {
             <div className="mb-4">
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <h5 className="m-0">Delivery Address</h5>
-                <button 
+                <button
                   className="btn btn-sm btn-outline-primary"
-                  onClick={() => setShowAddAddressForm(!showAddAddressForm)}
+                  onClick={handleAddNewAddress}
                 >
                   <Plus size={16} className="me-1" />
                   Add New
                 </button>
               </div>
 
-              {showAddAddressForm && (
-                <div className="border rounded p-3 mb-3">
-                  <h6 className="mb-3">Add New Address</h6>
-                  <div className="row mb-3">
-                    <div className="col-md-6 mb-3">
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Full Name"
-                        value={newAddress.name}
-                        onChange={(e) => setNewAddress({...newAddress, name: e.target.value})}
-                      />
-                    </div>
-                    <div className="col-md-6 mb-3">
-                      <input
-                        type="tel"
-                        className="form-control"
-                        placeholder="Phone Number"
-                        value={newAddress.phone}
-                        onChange={(e) => setNewAddress({...newAddress, phone: e.target.value})}
-                      />
-                    </div>
+              {addressLoading ? (
+                <div className="text-center py-4">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
                   </div>
-                  <div className="mb-3">
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Street Address"
-                      value={newAddress.street}
-                      onChange={(e) => setNewAddress({...newAddress, street: e.target.value})}
-                    />
-                  </div>
-                  <div className="row mb-3">
-                    <div className="col-md-4 mb-3">
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Pin Code"
-                        value={newAddress.zip}
-                        onChange={(e) => setNewAddress({...newAddress, zip: e.target.value})}
-                      />
-                    </div>
-                    <div className="col-md-4 mb-3">
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="City"
-                        value={newAddress.city}
-                        onChange={(e) => setNewAddress({...newAddress, city: e.target.value})}
-                      />
-                    </div>
-                    <div className="col-md-4">
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="State"
-                        value={newAddress.state}
-                        onChange={(e) => setNewAddress({...newAddress, state: e.target.value})}
-                      />
-                    </div>
-                  </div>
-                  <button 
-                    className="btn btn-primary w-100"
-                    onClick={handleAddAddress}
+                  <p className="mt-2">Loading addresses...</p>
+                </div>
+              ) : addresses.length === 0 ? (
+                <div className="text-center py-4">
+                  <MapPin size={48} className="mb-3 text-muted" />
+                  <p>No addresses found</p>
+                  <button
+                    className="btn btn-primary"
+                    onClick={handleAddNewAddress}
                   >
-                    Save Address
+                    Add Address
                   </button>
                 </div>
-              )}
-
-              <div className="mb-3">
-                {addresses.map((address) => (
-                  <div 
-                    key={address.id} 
-                    className={`border rounded p-3 mb-2 cursor-pointer ${selectedAddress?.id === address.id ? 'border-primary bg-light' : ''}`}
-                    onClick={() => handleAddressSelect(address)}
-                  >
-                    <div className="d-flex align-items-start">
-                      <div className="me-2">
-                        {selectedAddress?.id === address.id ? (
-                          <Check className="text-primary" size={20} />
-                        ) : (
-                          <div className="border rounded-circle" style={{width: '20px', height: '20px'}}></div>
-                        )}
-                      </div>
-                      <div className="flex-grow-1">
-                        <div className="d-flex justify-content-between">
-                          <h6 className="mb-1">{address.name}</h6>
-                          {address.isDefault && (
-                            <span className="badge bg-light text-dark small">Default</span>
+              ) : (
+                <div className="mb-3">
+                  {addresses.map((address) => (
+                    <div
+                      key={address._id}
+                      className={`border rounded p-3 mb-2 cursor-pointer ${selectedAddress?._id === address._id ? 'border-primary bg-light' : ''}`}
+                      onClick={() => handleAddressSelect(address)}
+                    >
+                      <div className="d-flex align-items-start">
+                        <div className="me-2">
+                          {selectedAddress?._id === address._id ? (
+                            <Check className="text-primary" size={20} />
+                          ) : (
+                            <div className="border rounded-circle" style={{ width: '20px', height: '20px' }}></div>
                           )}
                         </div>
-                        <p className="small mb-1">{address.street}</p>
-                        <p className="small mb-1">{address.city}, {address.state} - {address.zip}</p>
-                        <p className="small mb-0">Phone: {address.phone}</p>
+                        <div className="flex-grow-1">
+                          <div className="d-flex justify-content-between">
+                            <h6 className="mb-1">{address.firstName} {address.lastName}</h6>
+                            {address.defaultAddress && (
+                              <span className="badge bg-light text-dark small">Default</span>
+                            )}
+                          </div>
+                          <p className="small mb-1">{address.address}, {address.area}</p>
+                          <p className="small mb-1">{address.landmark}</p>
+                          <p className="small mb-1">{address.city}, {address.state} - {address.pincode}</p>
+                          <p className="small mb-0">Phone: {address.number}</p>
+                          <p className="small mb-0">Address Type: {address.addressType}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Payment Section */}
@@ -300,63 +338,57 @@ function CheckoutPage() {
 
           {/* Right Column - Cart Summary */}
           <div className="col-lg-5 col-12 p-3 p-md-4 bg-light">
-            <div className="sticky-top" style={{top: '20px'}}>
+            <div className="sticky-top" style={{ top: '20px' }}>
               <h5 className="mb-4">Order Summary</h5>
-              
-              <div className="d-flex mb-4">
-                <div className="me-3 position-relative">
-                  <img
-                    src={tshirt2}
-                    alt="Men's Retro Crew Neck T-shirt"
-                    className="rounded"
-                    style={{ width: "80px", height: "80px", objectFit: "cover" }}
-                  />
-                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-light text-dark border">
-                    1
-                  </span>
-                </div>
-                <div className="flex-grow-1">
-                  <p className="mb-1 fw-medium">Men's Retro Crew Neck T-shirt</p>
-                  <p className="small text-muted mb-1">Size: L</p>
-                  <p className="small text-muted">Color: Grey</p>
-                </div>
-                <div>
-                  <p className="text-end fw-medium">₹999</p>
-                </div>
-              </div>
 
-              <div className="mb-3">
-                <div className="input-group">
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Discount code"
-                  />
-                  <button className="btn btn-outline-dark" type="button">
-                    Apply
-                  </button>
+              {/* Dynamic Cart Items */}
+              {checkoutData?.cartItems?.map((item, index) => (
+                <div key={item._id || index} className="d-flex mb-4">
+                  <div className="me-3 position-relative">
+                    <img
+                      src={item.productId.images?.[0] || tshirt2}
+                      alt={item.productId.title}
+                      className="rounded"
+                      style={{ width: "80px", height: "80px", objectFit: "cover" }}
+                    />
+                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-light text-dark border">
+                      {item.quantity}
+                    </span>
+                  </div>
+                  <div className="flex-grow-1">
+                    <p className="mb-1 fw-medium">{item.productId.title}</p>
+                    <p className="small text-muted mb-1">Size: {item.size}</p>
+                    <p className="small text-muted">Color: {item.color}</p>
+                  </div>
+                  <div>
+                    <p className="text-end fw-medium">₹{item.price}</p>
+                  </div>
                 </div>
-              </div>
-
+              ))}
               <div className="border-top pt-3 mb-2">
                 <div className="d-flex justify-content-between mb-2">
                   <span>Subtotal</span>
-                  <span>₹999.00</span>
+                  <span>₹{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="d-flex justify-content-between mb-2">
                   <span>Shipping</span>
                   <span className="text-success">Free</span>
                 </div>
+                {discount > 0 && (
+                  <div className="d-flex justify-content-between mb-2">
+                    <span>Discount</span>
+                    <span className="text-success">-₹{discount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="d-flex justify-content-between mb-2">
                   <span>Taxes</span>
-                  <span>₹0.00</span>
+                  <span>₹{taxes.toFixed(2)}</span>
                 </div>
               </div>
-
               <div className="border-top pt-3">
                 <div className="d-flex justify-content-between">
                   <h5>Total</h5>
-                  <h5>₹999.00</h5>
+                  <h5>₹{total.toFixed(2)}</h5>
                 </div>
               </div>
             </div>

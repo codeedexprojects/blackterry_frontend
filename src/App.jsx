@@ -22,6 +22,8 @@ import AdminLogin from './Admin/Pages/AdminLogin'
 import Register from './pages/Register'
 import AddAddress from './pages/AddAddress'
 import { CustomToastContainer } from './Components/CustomeToast'
+import OrderConfirmation from './pages/OrderConfirmation'
+import OrderList from './pages/OrderList'
 
 function App() {
 
@@ -41,10 +43,12 @@ function App() {
         <Route path='/details/:id' element={<Details />} />
         {/* <Route path='/details/:id' element={<Details/>}/> */}
         <Route path='/size-chart' element={<SizeChart />} />
-        <Route path='/orders' element={<Orders />} />
+        <Route path='/orders/:orderId' element={<Orders />} />
         <Route path='/checkout' element={<CheckoutPage />} />
         <Route path='/register' element={<Register />} />
         <Route path='/add-address' element={<AddAddress />} />
+        <Route path='/order-confirmation' element={<OrderConfirmation />} />
+        <Route path='/order-list' element={<OrderList />} />
 
 
         <Route path="/admin/*" element={<Dashboard />} />

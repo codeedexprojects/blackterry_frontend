@@ -6,5 +6,7 @@ export const API_ENDPOINTS = {
     USER_ADDRESS:'/addresses',
     PRODUCTS:'/products',
     WISHLIST:'/wishlist',
-    CART:'/cart'
+    CART:'/cart',
+    CHECKOUT:'/checkout',
+    ORDER:'/orders'
 }
