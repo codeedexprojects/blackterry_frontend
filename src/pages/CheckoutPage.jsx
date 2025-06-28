@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { CreditCard, Lock, MapPin, Plus, Check } from "lucide-react";
+import { CreditCard, Lock, MapPin, Plus, Check, Home, Building, Star } from "lucide-react";
 import tshirt2 from "/src/assets/tshirt7.jpg";
 import { useLocation, useNavigate } from "react-router-dom";
 import Header from "/src/Components/Header";
@@ -81,7 +81,6 @@ function CheckoutPage() {
       const response = await placeOrder(reqBody);
 
       if (response && response.data) {
-        // Navigate to order confirmation page with order details
         navigate("/order-confirmation", {
           state: {
             orderId: response.data._id,
@@ -113,8 +112,20 @@ function CheckoutPage() {
     const shipping = 0;
     const taxes = 0;
     const discount = checkoutData.discountedPrice || 0;
-    const total = subtotal - discount + shipping + taxes;
+    const total = subtotal + shipping + taxes; // Don't subtract discount from total
     return { subtotal, shipping, taxes, discount, total };
+  };
+
+  const getAddressIcon = (addressType) => {
+    switch (addressType?.toLowerCase()) {
+      case 'home':
+        return <Home size={16} className="text-primary" />;
+      case 'office':
+      case 'work':
+        return <Building size={16} className="text-success" />;
+      default:
+        return <MapPin size={16} className="text-muted" />;
+    }
   };
 
   const { subtotal, shipping, taxes, discount, total } = calculateTotals();
@@ -184,7 +195,7 @@ function CheckoutPage() {
             </div>
 
             {/* Contact Section */}
-            <div className="mb-4">
+            {/* <div className="mb-4">
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <h5 className="m-0">Contact</h5>
                 <span className="text-primary small">Log in</span>
@@ -208,67 +219,166 @@ function CheckoutPage() {
                   Email me with news and offers
                 </label>
               </div>
-            </div>
+            </div> */}
 
-            {/* Delivery Section */}
+            {/* Delivery Section - Redesigned */}
             <div className="mb-4">
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <h5 className="m-0">Delivery Address</h5>
+              <div className="d-flex justify-content-between align-items-center mb-4">
+                <h5 className="m-0 d-flex align-items-center">
+                  <MapPin size={20} className="me-2" style={{ color: "#50311D" }} />
+                  Delivery Address
+                </h5>
                 <button
-                  className="btn btn-sm btn-outline-primary"
+                  className="btn d-flex align-items-center px-3 py-2"
                   onClick={handleAddNewAddress}
+                  style={{ 
+                    backgroundColor: "#50311D", 
+                    color: "white",
+                    border: "none",
+                    borderRadius: "8px",
+                    fontSize: "14px",
+                    fontWeight: "500"
+                  }}
                 >
-                  <Plus size={16} className="me-1" />
-                  Add New
+                  <Plus size={16} className="me-2" />
+                  Add Address
                 </button>
               </div>
 
               {addressLoading ? (
-                <div className="text-center py-4">
+                <div className="text-center py-5" style={{ backgroundColor: "#f8f9fa", borderRadius: "12px" }}>
                   <div className="spinner-border text-primary" role="status">
                     <span className="visually-hidden">Loading...</span>
                   </div>
-                  <p className="mt-2">Loading addresses...</p>
+                  <p className="mt-3 mb-0 text-muted">Loading your addresses...</p>
                 </div>
               ) : addresses.length === 0 ? (
-                <div className="text-center py-4">
-                  <MapPin size={48} className="mb-3 text-muted" />
-                  <p>No addresses found</p>
+                <div className="text-center py-5" style={{ 
+                  backgroundColor: "#f8f9fa", 
+                  borderRadius: "12px",
+                  border: "2px dashed #dee2e6"
+                }}>
+                  <div className="mb-3">
+                    <div 
+                      className="d-inline-flex align-items-center justify-content-center rounded-circle"
+                      style={{ 
+                        width: "60px", 
+                        height: "60px", 
+                        backgroundColor: "#e9ecef" 
+                      }}
+                    >
+                      <MapPin size={24} className="text-muted" />
+                    </div>
+                  </div>
+                  <h6 className="mb-2">No delivery addresses found</h6>
+                  <p className="text-muted mb-3 small">Add your first address to continue with checkout</p>
                   <button
-                    className="btn btn-primary"
+                    className="btn d-flex align-items-center mx-auto px-4 py-2"
                     onClick={handleAddNewAddress}
+                    style={{ 
+                      backgroundColor: "#50311D", 
+                      color: "white",
+                      border: "none",
+                      borderRadius: "8px",
+                      fontWeight: "500"
+                    }}
                   >
-                    Add Address
+                    <Plus size={16} className="me-2" />
+                    Add Your First Address
                   </button>
                 </div>
               ) : (
-                <div className="mb-3">
+                <div className="address-container">
                   {addresses.map((address) => (
                     <div
                       key={address._id}
-                      className={`border rounded p-3 mb-2 cursor-pointer ${selectedAddress?._id === address._id ? 'border-primary bg-light' : ''}`}
+                      className="address-card mb-3"
                       onClick={() => handleAddressSelect(address)}
+                      style={{
+                        border: selectedAddress?._id === address._id ? "2px solid #50311D" : "1px solid #dee2e6",
+                        borderRadius: "12px",
+                        padding: "20px",
+                        cursor: "pointer",
+                        backgroundColor: selectedAddress?._id === address._id ? "#f8f5f3" : "white",
+                        transition: "all 0.3s ease",
+                        position: "relative"
+                      }}
                     >
-                      <div className="d-flex align-items-start">
-                        <div className="me-2">
-                          {selectedAddress?._id === address._id ? (
-                            <Check className="text-primary" size={20} />
-                          ) : (
-                            <div className="border rounded-circle" style={{ width: '20px', height: '20px' }}></div>
-                          )}
-                        </div>
-                        <div className="flex-grow-1">
-                          <div className="d-flex justify-content-between">
-                            <h6 className="mb-1">{address.firstName} {address.lastName}</h6>
-                            {address.defaultAddress && (
-                              <span className="badge bg-light text-dark small">Default</span>
-                            )}
+                      {/* Selection indicator */}
+                      <div 
+                        className="position-absolute"
+                        style={{ top: "15px", right: "15px" }}
+                      >
+                        {selectedAddress?._id === address._id ? (
+                          <div 
+                            className="d-flex align-items-center justify-content-center rounded-circle"
+                            style={{ 
+                              width: "24px", 
+                              height: "24px", 
+                              backgroundColor: "#50311D" 
+                            }}
+                          >
+                            <Check size={14} className="text-white" />
                           </div>
-                          <p className="small mb-1">{address.address}, {address.area}</p>
-                          <p className="small mb-1">{address.landmark}</p>
-                          <p className="small mb-1">{address.city}, {address.state} - {address.pincode}</p>
-                          <p className="small mb-0">Phone: {address.number}</p>
-                          <p className="small mb-0">Address Type: {address.addressType}</p>
+                        ) : (
+                          <div 
+                            className="rounded-circle"
+                            style={{ 
+                              width: "24px", 
+                              height: "24px", 
+                              border: "2px solid #dee2e6" 
+                            }}
+                          ></div>
+                        )}
+                      </div>
+
+                      {/* Address content */}
+                      <div className="row">
+                        <div className="col-12">
+                          {/* Header with name and badges */}
+                          <div className="d-flex align-items-center mb-2">
+                            {getAddressIcon(address.addressType)}
+                            <h6 className="mb-0 ms-2 me-3 fw-semibold">
+                              {address.firstName} {address.lastName}
+                            </h6>
+                            <div className="d-flex gap-2">
+                              {address.defaultAddress && (
+                                <span 
+                                  className="badge d-flex align-items-center"
+                                  style={{ 
+                                    backgroundColor: "#50311D", 
+                                    color: "white",
+                                    fontSize: "10px",
+                                    padding: "4px 8px"
+                                  }}
+                                >
+                                  <Star size={10} className="me-1" />
+                                  Default
+                                </span>
+                              )}
+                              <span 
+                                className="badge"
+                                style={{ 
+                                  backgroundColor: address.addressType?.toLowerCase() === 'home' ? "#e7f3ff" : "#f0f9ff",
+                                  color: address.addressType?.toLowerCase() === 'home' ? "#0066cc" : "#0080ff",
+                                  fontSize: "10px",
+                                  padding: "4px 8px"
+                                }}
+                              >
+                                {address.addressType}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Address details */}
+                          <div className="text-muted" style={{ fontSize: "14px", lineHeight: "1.5" }}>
+                            <p className="mb-1">{address.address}</p>
+                            <p className="mb-1">{address.area}, {address.landmark}</p>
+                            <p className="mb-2">{address.city}, {address.state} - {address.pincode}</p>
+                            <p className="mb-0">
+                              <strong>Phone:</strong> {address.number}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -395,6 +505,39 @@ function CheckoutPage() {
           </div>
         </div>
       </div>
+
+      {/* Custom CSS for additional styling */}
+      <style jsx>{`
+        .address-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .address-container {
+          max-height: 400px;
+          overflow-y: auto;
+          padding-right: 8px;
+        }
+        
+        .address-container::-webkit-scrollbar {
+          width: 4px;
+        }
+        
+        .address-container::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 4px;
+        }
+        
+        .address-container::-webkit-scrollbar-thumb {
+          background: #50311D;
+          border-radius: 4px;
+        }
+        
+        .address-container::-webkit-scrollbar-thumb:hover {
+          background: #3d2517;
+        }
+      `}</style>
+      
       <Footer />
     </>
   );

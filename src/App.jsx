@@ -41,7 +41,6 @@ function App() {
         <Route path='/profile' element={<Profile />} />
         <Route path='/setting' element={<Setting />} />
         <Route path='/details/:id' element={<Details />} />
-        {/* <Route path='/details/:id' element={<Details/>}/> */}
         <Route path='/size-chart' element={<SizeChart />} />
         <Route path='/orders/:orderId' element={<Orders />} />
         <Route path='/checkout' element={<CheckoutPage />} />

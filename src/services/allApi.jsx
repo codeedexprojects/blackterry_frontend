@@ -147,7 +147,9 @@ export const addToWishlist = async (reqBody) => {
 
 export const removeWishlist = async (reqBody) => {
     try {
-        const response = await axios.delete(`${BASE_URL}${API_ENDPOINTS.WISHLIST}`, reqBody);
+        const response = await axios.delete(`${BASE_URL}${API_ENDPOINTS.WISHLIST}`, {
+            data: reqBody  
+        });
         return response;
     } catch (error) {
         console.log(error);
@@ -264,6 +266,20 @@ export const placeOrder = async (reqBody) => {
     }
 };
 
+export const buyNow = async (reqBody) => {
+    try {
+        const token = localStorage.getItem('userToken');
+        const response = await axios.post(`${BASE_URL}${API_ENDPOINTS.CHECKOUT}/buy-now`, reqBody, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return response;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
 export const orderById = async (orderId) => {
     try {
         const token = localStorage.getItem('userToken');
@@ -286,6 +302,15 @@ export const allOrders = async (id) => {
                 Authorization: `Bearer ${token}`
             }
         });
+        return response;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export const getTextSlider = async () => {
+    try {
+        const response = await axios.get(`${BASE_URL}${API_ENDPOINTS.TEXT_SLIDER}`);
         return response;
     } catch (error) {
         console.log(error);

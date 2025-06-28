@@ -8,5 +8,6 @@ export const API_ENDPOINTS = {
     WISHLIST:'/wishlist',
     CART:'/cart',
     CHECKOUT:'/checkout',
-    ORDER:'/orders'
+    ORDER:'/orders',
+    TEXT_SLIDER:'/text-sliders'
 }

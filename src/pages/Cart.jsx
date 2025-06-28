@@ -14,10 +14,11 @@ function Cart() {
   const [updatingItems, setUpdatingItems] = useState(new Set());
 
   const userId = localStorage.getItem('userId');
+  const userToken = localStorage.getItem('userToken');
 
   useEffect(() => {
     const fetchCartData = async () => {
-      if (!userId) {
+      if (!userId || !userToken) {
         setLoading(false);
         return;
       }
@@ -51,10 +52,14 @@ function Cart() {
     };
 
     fetchCartData();
-  }, [userId]);
+  }, [userId, userToken]);
 
   const handleLogin = () => {
     navigate("/");
+  };
+
+  const handleRegister = () => {
+    navigate("/register");
   };
 
   const handleCheckout = async () => {
@@ -204,6 +209,21 @@ function Cart() {
     );
   }
 
+  // Check if user is not logged in
+  if (!userId || !userToken) {
+    return (
+      <div className="min-vh-100 d-flex flex-column">
+        <Header />
+        <main className="flex-grow-1">
+          <div className="container my-4 px-3 px-md-4">
+            <LoginPrompt handleLogin={handleLogin} handleRegister={handleRegister} />
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-vh-100 d-flex flex-column">
       <Header />
@@ -223,7 +243,7 @@ function Cart() {
           )}
 
           {cartItems.length === 0 ? (
-            <EmptyCart handleLogin={handleLogin} />
+            <EmptyCart />
           ) : (
             <>
               <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap">
@@ -297,7 +317,35 @@ function Cart() {
   );
 }
 
-const EmptyCart = ({ handleLogin }) => (
+// Login Prompt Component
+const LoginPrompt = ({ handleLogin, handleRegister }) => (
+  <div className="d-flex flex-column align-items-center text-center py-5 my-5">
+    <h2 className="fw-bold mb-4">PLEASE LOGIN TO VIEW YOUR CART</h2>
+    <button
+      onClick={handleLogin}
+      className="btn text-white mb-3"
+      style={{
+        backgroundColor: "#50311D",
+        padding: "10px 20px",
+        borderRadius: "10px",
+      }}
+    >
+      Login Now
+    </button>
+    <p className="text-muted small mb-2">New to our store?</p>
+    <p className="small">
+      <span
+        onClick={handleRegister}
+        className="text-decoration-underline"
+        style={{ color: "#50311D", cursor: "pointer" }}
+      >
+        CREATE AN ACCOUNT
+      </span>
+    </p>
+  </div>
+);
+
+const EmptyCart = () => (
   <div className="d-flex flex-column align-items-center text-center py-5 my-5">
     <h2 className="fw-bold mb-4">YOUR CART IS EMPTY</h2>
     <a
@@ -311,17 +359,6 @@ const EmptyCart = ({ handleLogin }) => (
     >
       Continue shopping
     </a>
-    <p className="text-muted small mb-2">HAVE AN ACCOUNT?</p>
-    <p className="small">
-      <span
-        onClick={handleLogin}
-        className="text-decoration-underline"
-        style={{ color: "#50311D", cursor: "pointer" }}
-      >
-        LOGIN
-      </span>
-      <span className="text-muted"> TO CHECK OUT FASTER</span>
-    </p>
   </div>
 );
 
@@ -445,5 +482,6 @@ const QuantityControls = ({ quantity, onDecrease, onIncrease, onRemove, disabled
     </button>
   </div>
 );
+
 
 export default Cart;

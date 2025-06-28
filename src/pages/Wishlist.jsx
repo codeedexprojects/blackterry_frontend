@@ -3,7 +3,10 @@ import { RiDeleteBin6Fill } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
 import Header from "/src/Components/Header";
 import Footer from "/src/Components/Footer";
-import { getWishlist, removeWishlist } from "../services/allApi";
+import { addToCart, getWishlist, removeWishlist } from "../services/allApi";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 function Wishlist() {
   const navigate = useNavigate();
@@ -70,12 +73,15 @@ function Wishlist() {
       setRemovingItems(prev => new Set([...prev, itemId]));
 
       const userId = getUserId();
-      const reqBody = new FormData();
-      reqBody.append('userId', userId);
-      reqBody.append('productId', productId);
+
+      // Send as JSON object instead of FormData
+      const reqBody = {
+        userId: userId,
+        productId: productId
+      };
 
       const response = await removeWishlist(reqBody);
-      
+
       if (response && response.status === 200) {
         setWishlistItems(prev => prev.filter(item => item.id !== itemId));
       } else {
@@ -93,13 +99,51 @@ function Wishlist() {
     }
   };
 
-  const handleAddToCart = (item) => {
-    if (!isUserLoggedIn()) {
-      alert('Please login to add items to cart');
-      return;
+  // Fixed handleAddToCart function
+  const handleAddToCart = async (item) => {
+    try {
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        toast.info("Please login to add items to your cart");
+        return;
+      }
+
+      // Get default color and size if available
+      let selectedColor = null;
+      let selectedSize = null;
+      
+      if (item.colors && item.colors.length > 0) {
+        selectedColor = item.colors[0].colorName || item.colors[0].color || item.colors[0];
+        if (item.colors[0].sizes && item.colors[0].sizes.length > 0) {
+          selectedSize = item.colors[0].sizes[0].size || item.colors[0].sizes[0];
+        }
+      }
+
+      // If no color/size data, use defaults
+      if (!selectedColor) {
+        selectedColor = "Default";
+      }
+      if (!selectedSize) {
+        selectedSize = "M"; // or whatever default size you want
+      }
+
+      const reqBody = {
+        userId: userId,
+        productId: item.productId, // Use item.productId instead of currentProduct._id
+        quantity: 1, // Default quantity
+        color: selectedColor,
+        size: selectedSize
+      };
+
+      const response = await addToCart(reqBody);
+
+      if (response.data) {
+        toast.success("Item added to cart successfully!");
+      }
+    } catch (error) {
+      console.error("Add to cart error:", error);
+      toast.error(error.response?.data?.message || "Failed to add item to cart");
     }
-    console.log('Add to cart:', item);
-    // Implement your cart API call here
   };
 
   if (loading) {
@@ -216,6 +260,7 @@ function Wishlist() {
   return (
     <>
       <Header />
+      <ToastContainer position="top-right" autoClose={3000} />
       <div className="container py-5">
         <div className="d-flex justify-content-between align-items-center mb-5">
           <h2 style={{ fontWeight: "400", fontSize: "2rem" }}>
@@ -237,10 +282,10 @@ function Wishlist() {
           {wishlistItems.map((item) => (
             <div className="col" key={item.id}>
               <div style={{ width: "100%", maxWidth: "280px" }}>
-                <div 
-                  style={{ 
-                    width: "100%", 
-                    height: "320px", 
+                <div
+                  style={{
+                    width: "100%",
+                    height: "320px",
                     backgroundColor: "#f8f9fa",
                     border: "1px solid #e9ecef",
                     marginBottom: "15px",
@@ -251,29 +296,29 @@ function Wishlist() {
                   <img
                     src={item.images && item.images.length > 0 ? item.images[0] : '/src/assets/placeholder.jpg'}
                     alt={item.name}
-                    style={{ 
-                      width: "100%", 
-                      height: "100%", 
-                      objectFit: "cover" 
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover"
                     }}
                     onError={(e) => {
                       e.target.src = '/src/assets/placeholder.jpg';
                     }}
                   />
                 </div>
-                
+
                 <div>
-                  <h6 
-                    style={{ 
-                      fontWeight: "400", 
-                      fontSize: "0.95rem", 
+                  <h6
+                    style={{
+                      fontWeight: "400",
+                      fontSize: "0.95rem",
                       marginBottom: "8px",
                       color: "#333"
                     }}
                   >
                     {item.name}
                   </h6>
-                  
+
                   <div style={{ marginBottom: "8px" }}>
                     <span style={{ fontWeight: "500", fontSize: "1rem", color: "#333" }}>
                       ₹{item.price}
@@ -291,14 +336,14 @@ function Wishlist() {
                       </span>
                     )}
                   </div>
-                  
+
                   {item.colors && item.colors.length > 0 && (
                     <p style={{ fontSize: "0.85rem", color: "#666", marginBottom: "15px" }}>
-                      SIZE: {item.colors[0].sizes && item.colors[0].sizes.length > 0 ? 
+                      SIZE: {item.colors[0].sizes && item.colors[0].sizes.length > 0 ?
                         item.colors[0].sizes.map(s => s.size).join(', ') : 'S'}
                     </p>
                   )}
-                  
+
                   <div className="d-flex gap-2">
                     <button
                       style={{
@@ -314,7 +359,7 @@ function Wishlist() {
                     >
                       Add to cart
                     </button>
-                    <button 
+                    <button
                       style={{
                         backgroundColor: "transparent",
                         border: "1px solid #ddd",
@@ -340,9 +385,9 @@ function Wishlist() {
           ))}
 
           <div className="col">
-            <div 
-              style={{ 
-                width: "100%", 
+            <div
+              style={{
+                width: "100%",
                 maxWidth: "280px",
                 height: "320px",
                 border: "2px dashed #ddd",

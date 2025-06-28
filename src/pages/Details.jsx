@@ -1,21 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FaHeart, FaMinus, FaPlus, FaShoppingCart, FaTruck, FaRegCreditCard, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import Footer from '/src/Components/Footer'
 import { IoMdInformationCircleOutline } from "react-icons/io";
-import { addToCart, getProductById } from "../services/allApi";
+import { addToCart, getProductById, buyNow } from "../services/allApi";
 import Header from "/src/Components/Header";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import RecommendedProducts from "../Components/ProductDetails/RecomendedProducts";
 
 function Details() {
-
-  const { id } = useParams(); // Get product ID from URL params
+  const { id } = useParams(); 
+  const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [buyNowLoading, setBuyNowLoading] = useState(false);
 
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState("");
@@ -37,17 +38,14 @@ function Details() {
 
         setProduct(productData);
 
-        // Set default selections
         if (productData.colors && productData.colors.length > 0) {
           setSelectedColor(productData.colors[0].color);
 
-          // Set default size from first available color
           if (productData.colors[0].sizes && productData.colors[0].sizes.length > 0) {
             setSelectedSize(productData.colors[0].sizes[0].size);
           }
         }
 
-        // Set main image (use first image or placeholder)
         if (productData.images && productData.images.length > 0) {
           setMainImage(productData.images[0]);
         }
@@ -65,7 +63,6 @@ function Details() {
     }
   }, [id]);
 
-  // Get available sizes for selected color
   const getAvailableSizes = () => {
     if (!product || !selectedColor) return [];
 
@@ -73,7 +70,6 @@ function Details() {
     return colorData ? colorData.sizes : [];
   };
 
-  // Get stock for selected color and size
   const getStock = () => {
     if (!product || !selectedColor || !selectedSize) return 0;
 
@@ -84,7 +80,6 @@ function Details() {
     return sizeData ? sizeData.stock : 0;
   };
 
-  // Calculate discounted price
   const getDiscountedPrice = () => {
     if (!product) return 0;
     return product.actualPrice - (product.actualPrice * product.discount / 100);
@@ -102,19 +97,17 @@ function Details() {
   const handleColorChange = (color) => {
     setSelectedColor(color);
 
-    // Reset size selection when color changes
     const colorData = product.colors.find(c => c.color === color);
     if (colorData && colorData.sizes.length > 0) {
       setSelectedSize(colorData.sizes[0].size);
     }
 
-    // Reset quantity to 1 when changing color/size
     setQuantity(1);
   };
 
   const handleSizeChange = (size) => {
     setSelectedSize(size);
-    setQuantity(1); // Reset quantity when size changes
+    setQuantity(1); 
   };
 
   const handleAddToCart = async () => {
@@ -151,6 +144,57 @@ function Details() {
     } catch (error) {
       console.error("Add to cart error:", error);
       toast.error(error.response?.data?.message || "Failed to add item to cart");
+    }
+  };
+
+  const handleBuyNow = async () => {
+    try {
+      setBuyNowLoading(true);
+      
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        toast.info("Please login to proceed with purchase");
+        return;
+      }
+
+      if (!selectedColor) {
+        toast.error("Please select a color");
+        return;
+      }
+
+      if (!selectedSize) {
+        toast.error("Please select a size");
+        return;
+      }
+
+      const reqBody = {
+        userId: userId,
+        productId: product._id,
+        quantity: quantity,
+        color: selectedColor,
+        size: selectedSize
+      };
+
+      const response = await buyNow(reqBody);
+
+      if (response && response.status === 201) {
+        const checkoutId = response.data.checkoutId;
+        
+        // Navigate to checkout page with checkoutId
+        navigate("/checkout", {
+          state: {
+            checkoutId: checkoutId,
+          },
+        });
+      } else {
+        console.error('Buy now failed:', response);
+        toast.error("Failed to process purchase");
+      }
+    } catch (error) {
+      console.error("Buy now error:", error);
+      toast.error(error.response?.data?.message || "Failed to process purchase");
+    } finally {
+      setBuyNowLoading(false);
     }
   };
 
@@ -388,10 +432,22 @@ function Details() {
                 <button
                   className="btn text-white w-100 py-3 fw-bold d-flex align-items-center justify-content-center gap-2"
                   style={{ backgroundColor: "#50311D" }}
-                  disabled={currentStock === 0}
+                  disabled={currentStock === 0 || buyNowLoading}
+                  onClick={handleBuyNow}
                 >
-                  <FaRegCreditCard />
-                  {currentStock > 0 ? 'Buy it now' : 'Out of stock'}
+                  {buyNowLoading ? (
+                    <>
+                      <div className="spinner-border spinner-border-sm me-2" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <FaRegCreditCard />
+                      {currentStock > 0 ? 'Buy it now' : 'Out of stock'}
+                    </>
+                  )}
                 </button>
               </div>
 

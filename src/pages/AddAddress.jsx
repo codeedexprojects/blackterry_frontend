@@ -34,13 +34,38 @@ const AddAddress = () => {
       const fetchAddress = async () => {
         try {
           setLoading(true);
-          const response = await getAddress(location.state.addressId);
+          const userId = localStorage.getItem('userId');
+          
+          // Fetch all addresses for the user
+          const response = await getAddress(userId);
+          
           if (response.data) {
-            setFormData(response.data);
-            setAddressId(location.state.addressId);
-            setIsEditing(true);
+            // Find the specific address by ID
+            const addressToEdit = response.data.find(addr => addr._id === location.state.addressId);
+            
+            if (addressToEdit) {
+              setFormData({
+                firstName: addressToEdit.firstName || '',
+                lastName: addressToEdit.lastName || '',
+                number: addressToEdit.number || '',
+                address: addressToEdit.address || '',
+                area: addressToEdit.area || '',
+                landmark: addressToEdit.landmark || '',
+                pincode: addressToEdit.pincode || '',
+                city: addressToEdit.city || '',
+                state: addressToEdit.state || '',
+                country: addressToEdit.country || 'India',
+                addressType: addressToEdit.addressType || 'Home',
+                defaultAddress: addressToEdit.defaultAddress || false
+              });
+              setAddressId(location.state.addressId);
+              setIsEditing(true);
+            } else {
+              setError('Address not found');
+            }
           }
         } catch (error) {
+          console.error('Error fetching address:', error);
           setError('Failed to load address');
         } finally {
           setLoading(false);
@@ -80,11 +105,26 @@ const AddAddress = () => {
         setError(response.message || 'Operation failed');
       }
     } catch (error) {
+      console.error('Submit error:', error);
       setError(error.response?.data?.message || 'An error occurred');
     } finally {
       setLoading(false);
     }
   };
+
+  // Show loading spinner when fetching address data for editing
+  if (location.state?.addressId && loading && !isEditing) {
+    return (
+      <div>
+        <Header />
+        <div className="p-4 md:p-8 max-w-4xl mx-auto">
+          <div className="flex justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -103,7 +143,11 @@ const AddAddress = () => {
           {isEditing ? 'Edit Address' : 'Add New Address'}
         </h1>
 
-        {error && <div className="alert alert-danger mb-4">{error}</div>}
+        {error && (
+          <div className="p-3 mb-4 bg-red-100 text-red-700 rounded">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
