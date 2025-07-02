@@ -1,364 +1,421 @@
-import React, { useState } from "react";
-import { Plus, MoreHorizontal, Star, Grid3X3, List } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Plus, MoreHorizontal, Star, Edit, Trash2, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
-import image1 from "/src/assets/product.jpg";
 import AdminLayout from "../Components/AdminLayout";
+import { getProducts } from "../serveices/adminApi";
 
 function Product() {
-  const [viewMode, setViewMode] = useState("list");
   const [openDropdown, setOpenDropdown] = useState(null);
-  const [filters, setFilters] = useState({
-    kurti: true,
-    bottom: false,
-    kurtiSet: false,
-    maternityWear: false,
-    nightWear: false,
-    runningMaterial: false,
-    churidarMaterial: false,
-    offerZone: false,
-  });
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const products = Array(8)
-    .fill()
-    .map((_, index) => ({
-      id: index + 1,
-      name: "Stylish Crop Top",
-      image: image1,
-      stock: 12,
-      rate: 4.9,
-      price: "₹500",
-      orders: 48,
-      publish: "15-Nov-2024",
-    }));
+  // Fetch products on component mount
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
-  const handleFilterChange = (filterName) => {
-    setFilters((prev) => ({
-      ...prev,
-      [filterName]: !prev[filterName],
-    }));
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const response = await getProducts();
+      if (response && response.data) {
+        setProducts(response.data);
+      }
+    } catch (err) {
+      setError("Failed to fetch products");
+      console.error("Error fetching products:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const toggleDropdown = (index) => {
     setOpenDropdown(openDropdown === index ? null : index);
   };
 
-  return (
-    <AdminLayout>
-      <div className="max-w-7xl mx-aut mt-4">
-        <div className="flex flex-col lg:flex-row">
-          {/* Filter Section */}
-          <div className="lg:w-64 bg-white border-r border-gray-200 p-4">
-            {/* View Toggle */}
-            <div className="mb-6 space-y-2">
-              <button
-                onClick={() => setViewMode("list")}
-                className={`w-full flex items-center gap-2 py-2 mb-3 px-3 rounded-md text-sm font-medium transition-colors border ${
-                  viewMode === "list"
-                    ? "bg-orange-500/20 text-gray-900 border-orange-400"
-                    : "text-gray-600 hover:bg-gray-100 border-gray-200"
-                }`}
-              >
-                <List className="w-4 h-4" />
-                List View
-              </button>
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setOpenDropdown(null);
+    };
+    
+    if (openDropdown !== null) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [openDropdown]);
 
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`w-full flex items-center gap-2 py-2 px-3 rounded-md text-sm font-medium transition-colors border ${
-                  viewMode === "grid"
-                    ? "bg-orange-500/20 text-gray-900 border-orange-400"
-                    : "text-gray-600 hover:bg-gray-100 border-gray-200"
-                }`}
-              >
-                <Grid3X3 className="w-4 h-4" />
-                Grid View
-              </button>
-            </div>
+  // Get image URL (assuming images are stored with base URL)
+  const getImageUrl = (imageName) => {
+    if (!imageName) return "/src/assets/product.jpg"; // fallback image
+    // Adjust this based on your image storage setup
+    return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/uploads/${imageName}`;
+  };
 
-            {/* Filters */}
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Filters
-              </h3>
-              <div className="flex flex-col gap-3">
-                {[
-                  { key: "kurti", label: "Kurti" },
-                  { key: "bottom", label: "Bottom" },
-                  { key: "kurtiSet", label: "Kurti Set" },
-                  { key: "maternityWear", label: "Maternity Wear" },
-                  { key: "nightWear", label: "Night Wear" },
-                  { key: "runningMaterial", label: "Running Material" },
-                  { key: "churidarMaterial", label: "Churidar Material" },
-                  { key: "offerZone", label: "Offer Zone" },
-                ].map((filter) => (
-                  <label
-                    key={filter.key}
-                    className="flex items-center gap-2 text-sm font-medium text-gray-700"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={filters[filter.key]}
-                      onChange={() => handleFilterChange(filter.key)}
-                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
-                    />
-                    {filter.label}
-                  </label>
-                ))}
-              </div>
+  // Calculate average rating (placeholder - you might want to add this to your API)
+  const getAverageRating = (product) => {
+    // This is a placeholder. You might want to add rating functionality to your API
+    return (4.0 + Math.random() * 1).toFixed(1);
+  };
+
+  // Format date
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
+
+  // Handle dropdown actions
+  const handleEdit = (productId) => {
+    // Navigate to edit page or open edit modal
+    console.log("Edit product:", productId);
+    setOpenDropdown(null);
+  };
+
+  const handleDelete = (productId) => {
+    // Show confirmation and delete product
+    if (window.confirm("Are you sure you want to delete this product?")) {
+      console.log("Delete product:", productId);
+      // Add delete API call here
+    }
+    setOpenDropdown(null);
+  };
+
+  const handleView = (productId) => {
+    // Navigate to product detail page
+    console.log("View product:", productId);
+    setOpenDropdown(null);
+  };
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="max-w-7xl mx-auto mt-4">
+          <div className="p-4">
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             </div>
           </div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
-          {/* Main Products Section */}
-          <div className="flex-1 p-4">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-              <h1 className="text-2xl lg:text-3xl font-semibold text-gray-900">
-                Products
-              </h1>
+  if (error) {
+    return (
+      <AdminLayout>
+        <div className="max-w-7xl mx-auto mt-4">
+          <div className="p-4">
+            <div className="text-center text-red-600 p-8">
+              <p>{error}</p>
+              <button 
+                onClick={fetchProducts}
+                className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  return (
+    <AdminLayout>
+      <div className="max-w-7xl mx-auto mt-4">
+        <div className="p-4">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <h1 className="text-2xl lg:text-3xl font-semibold text-gray-900">
+              Products ({products.length})
+            </h1>
+            <Link
+              to="/admin/add-product"
+              className="flex items-center gap-2 no-underline bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              ADD PRODUCT
+            </Link>
+          </div>
+
+          {products.length === 0 ? (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+              <p className="text-gray-500 text-lg mb-4">No products found</p>
               <Link
-                style={{ textDecoration: "none" }}
                 to="/admin/add-product"
-                className="flex items-center gap-2 no-underline bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors no-underline"
               >
                 <Plus className="w-4 h-4" />
-                ADD PRODUCT
+                Add Your First Product
               </Link>
             </div>
-
-            {/* Products Display */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden relative">
-              {/* Grid View */}
-              {viewMode === "grid" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-                  {products.map((product, index) => (
-                    <div
-                      key={index}
-                      className="relative bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden"
-                    >
-                      {/* Product Image */}
-                      <div className="relative">
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="w-full h-48 object-cover"
-                        />
-                        {/* Dropdown Button */}
-                        <button
-                          onClick={() => toggleDropdown(index)}
-                          className="absolute top-2 right-2 p-1 hover:bg-gray-100 rounded-md transition-colors"
-                        >
-                          <MoreHorizontal className="w-5 h-5 text-gray-500" />
-                        </button>
-                      </div>
-
-                      {/* Product Details */}
-                      <div className="p-4">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-base font-semibold text-gray-900">
-                            {product.price}
+          ) : (
+            /* Products Table */
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              {/* Desktop Table */}
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-sky-500/20 border-b border-gray-200">
+                    <tr>
+                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
+                        Product Name
+                      </th>
+                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
+                        Code
+                      </th>
+                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
+                        Stock
+                      </th>
+                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
+                        Rate
+                      </th>
+                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
+                        Price
+                      </th>
+                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
+                        Orders
+                      </th>
+                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
+                        Created
+                      </th>
+                      <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {products.map((product, index) => (
+                      <tr
+                        key={product._id}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="py-4 px-6">
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={product.images.length > 0 ? getImageUrl(product.images[0]) : "/src/assets/product.jpg"}
+                              alt={product.title}
+                              className="w-12 h-12 object-cover rounded-lg border"
+                              onError={(e) => {
+                                e.target.src = "/src/assets/product.jpg";
+                              }}
+                            />
+                            <div>
+                              <span className="text-sm font-semibold text-gray-900 block">
+                                {product.title}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {product.colors.length} color{product.colors.length !== 1 ? 's' : ''}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-6 text-sm font-medium text-gray-700">
+                          {product.product_Code}
+                        </td>
+                        <td className="py-4 px-6">
+                          <span className={`text-sm font-semibold ${
+                            product.totalStock > 10 ? 'text-green-600' : 
+                            product.totalStock > 0 ? 'text-yellow-600' : 'text-red-600'
+                          }`}>
+                            {product.totalStock}
                           </span>
+                        </td>
+                        <td className="py-4 px-6">
                           <div className="flex items-center gap-1">
-                            <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                            <span className="text-xs font-semibold text-gray-700">
-                              {product.rate}
+                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                            <span className="text-sm font-semibold text-gray-700">
+                              {getAverageRating(product)}
                             </span>
                           </div>
-                        </div>
-                        <h3 className="text-xs font-semibold text-gray-900 truncate">
-                          {product.name}
-                        </h3>
-                        <p className="text-[10px] text-gray-600 truncate">
-                          Trendy, comfy crop to...
-                        </p>
-                        <p className="text-[10px] text-gray-600 mt-1">
-                          Published {product.publish}
-                        </p>
-                        <div className="flex justify-between mt-2 text-xs text-gray-700">
-                          <span>Stocks {product.stock}</span>
-                          <span>Orders {product.orders}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Desktop Table (List View) */}
-              {viewMode === "list" && (
-                <div className="hidden lg:block overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-sky-500/20 border-b border-gray-200">
-                      <tr>
-                        <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
-                          Product Name
-                        </th>
-                        <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
-                          Stock
-                        </th>
-                        <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
-                          Rate
-                        </th>
-                        <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
-                          Price
-                        </th>
-                        <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
-                          Orders
-                        </th>
-                        <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
-                          Publish
-                        </th>
-                        <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
-                          Action
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {products.map((product, index) => (
-                        <tr
-                          key={index}
-                          className="hover:bg-gray-50 transition-colors"
-                        >
-                          <td className="py-4 px-6">
-                            <div className="flex items-center gap-3">
-                              <img
-                                src={product.image}
-                                alt={product.name}
-                                className="w-10 h-10 object-cover rounded-lg"
-                              />
+                        </td>
+                        <td className="py-4 px-6">
+                          <div className="flex flex-col">
+                            {product.discount > 0 ? (
+                              <>
+                                <span className="text-sm font-semibold text-gray-900">
+                                  ₹{product.offerPrice}
+                                </span>
+                                <span className="text-xs text-gray-500 line-through">
+                                  ₹{product.actualPrice}
+                                </span>
+                              </>
+                            ) : (
                               <span className="text-sm font-semibold text-gray-900">
-                                {product.name}
+                                ₹{product.actualPrice}
                               </span>
-                            </div>
-                          </td>
-                          <td className="py-4 px-6 text-sm font-semibold text-gray-700">
-                            {product.stock}
-                          </td>
-                          <td className="py-4 px-6">
-                            <div className="flex items-center gap-1">
-                              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                              <span className="text-sm font-semibold text-gray-700">
-                                {product.rate}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="py-4 px-6 text-sm font-semibold text-gray-900">
-                            {product.price}
-                          </td>
-                          <td className="py-4 px-6 text-sm font-semibold text-gray-700">
-                            {product.orders}
-                          </td>
-                          <td className="py-4 px-6 text-sm font-medium text-gray-600">
-                            {product.publish}
-                          </td>
-                          <td className="py-4 px-6 relative">
-                            <button
-                              onClick={() => toggleDropdown(index)}
-                              className="p-1 hover:bg-gray-100 rounded-md transition-colors"
-                            >
-                              <MoreHorizontal className="w-5 h-5 text-gray-500" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {/* Mobile Cards (List View on Mobile) */}
-              {viewMode === "list" && (
-                <div className="lg:hidden">
-                  {products.map((product, index) => (
-                    <div
-                      key={index}
-                      className="p-4 border-b border-gray-100 last:border-b-0"
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            className="w-10 h-10 object-cover rounded-lg"
-                          />
-                          <div>
-                            <div className="text-sm font-semibold text-gray-900 mb-1">
-                              {product.name}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                              <span className="text-xs font-semibold text-gray-700">
-                                {product.rate}
-                              </span>
-                            </div>
+                            )}
                           </div>
-                        </div>
-                        <div className="relative">
+                        </td>
+                        <td className="py-4 px-6 text-sm font-semibold text-gray-700">
+                          {product.orderCount}
+                        </td>
+                        <td className="py-4 px-6 text-sm font-medium text-gray-600">
+                          {formatDate(product.createdAt)}
+                        </td>
+                        <td className="py-4 px-6 relative">
                           <button
-                            onClick={() => toggleDropdown(index)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleDropdown(index);
+                            }}
                             className="p-1 hover:bg-gray-100 rounded-md transition-colors"
                           >
                             <MoreHorizontal className="w-5 h-5 text-gray-500" />
                           </button>
+                          {openDropdown === index && (
+                            <div className="absolute right-0 top-full mt-1 w-32 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                              <button
+                                onClick={() => handleView(product._id)}
+                                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                              >
+                                <Eye className="w-4 h-4" />
+                                View
+                              </button>
+                              <button
+                                onClick={() => handleEdit(product._id)}
+                                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                              >
+                                <Edit className="w-4 h-4" />
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDelete(product._id)}
+                                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                                Delete
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Cards */}
+              <div className="lg:hidden">
+                {products.map((product, index) => (
+                  <div
+                    key={product._id}
+                    className="p-4 border-b border-gray-100 last:border-b-0"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={product.images.length > 0 ? getImageUrl(product.images[0]) : "/src/assets/product.jpg"}
+                          alt={product.title}
+                          className="w-12 h-12 object-cover rounded-lg border"
+                          onError={(e) => {
+                            e.target.src = "/src/assets/product.jpg";
+                          }}
+                        />
+                        <div>
+                          <div className="text-sm font-semibold text-gray-900 mb-1">
+                            {product.title}
+                          </div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                            <span className="text-xs font-semibold text-gray-700">
+                              {getAverageRating(product)}
+                            </span>
+                          </div>
+                          <span className="text-xs text-gray-500">
+                            Code: {product.product_Code}
+                          </span>
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div>
-                          <span className="text-gray-500 font-medium">
-                            Stock:{" "}
-                          </span>
-                          <span className="text-gray-700 font-semibold">
-                            {product.stock}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500 font-medium">
-                            Price:{" "}
-                          </span>
-                          <span className="text-gray-900 font-semibold">
-                            {product.price}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500 font-medium">
-                            Orders:{" "}
-                          </span>
-                          <span className="text-gray-700 font-semibold">
-                            {product.orders}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500 font-medium">
-                            Publish:{" "}
-                          </span>
-                          <span className="text-gray-600 font-medium">
-                            {product.publish}
-                          </span>
-                        </div>
+                      <div className="relative">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleDropdown(index);
+                          }}
+                          className="p-1 hover:bg-gray-100 rounded-md transition-colors"
+                        >
+                          <MoreHorizontal className="w-5 h-5 text-gray-500" />
+                        </button>
+                        {openDropdown === index && (
+                          <div className="absolute right-0 top-full mt-1 w-32 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                            <button
+                              onClick={() => handleView(product._id)}
+                              className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                            >
+                              <Eye className="w-4 h-4" />
+                              View
+                            </button>
+                            <button
+                              onClick={() => handleEdit(product._id)}
+                              className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                            >
+                              <Edit className="w-4 h-4" />
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDelete(product._id)}
+                              className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              Delete
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Dropdown Menu */}
-              {/* {openDropdown !== null && (
-                    <>
-                      <div
-                        className="fixed inset-0 z-10"
-                        onClick={() => setOpenDropdown(null)}
-                      ></div>
-                      <div className="absolute bottom-4 right-4 bg-white border border-gray-200 rounded-lg shadow-lg z-20 min-w-[120px]">
-                        <button className="w-full text-left px-4 py-3 text-sm font-medium text-blue-600 hover:bg-gray-50 transition-colors border-b border-gray-100">
-                          Edit
-                        </button>
-                        <button className="w-full text-left px-4 py-3 text-sm font-medium text-red-500 hover:bg-gray-50 transition-colors">
-                          Delete
-                        </button>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div>
+                        <span className="text-gray-500 font-medium">Stock: </span>
+                        <span className={`font-semibold ${
+                          product.totalStock > 10 ? 'text-green-600' : 
+                          product.totalStock > 0 ? 'text-yellow-600' : 'text-red-600'
+                        }`}>
+                          {product.totalStock}
+                        </span>
                       </div>
-                    </>
-                  )} */}
+                      <div>
+                        <span className="text-gray-500 font-medium">Price: </span>
+                        {product.discount > 0 ? (
+                          <span className="text-gray-900 font-semibold">
+                            ₹{product.offerPrice}
+                          </span>
+                        ) : (
+                          <span className="text-gray-900 font-semibold">
+                            ₹{product.actualPrice}
+                          </span>
+                        )}
+                      </div>
+                      <div>
+                        <span className="text-gray-500 font-medium">Orders: </span>
+                        <span className="text-gray-700 font-semibold">
+                          {product.orderCount}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 font-medium">Created: </span>
+                        <span className="text-gray-600 font-medium">
+                          {formatDate(product.createdAt)}
+                        </span>
+                      </div>
+                    </div>
+                    {product.colors.length > 0 && (
+                      <div className="mt-2 pt-2 border-t border-gray-100">
+                        <span className="text-xs text-gray-500 font-medium">Colors: </span>
+                        <span className="text-xs text-gray-700">
+                          {product.colors.map(c => c.color).join(', ')}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </AdminLayout>

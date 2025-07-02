@@ -8,12 +8,11 @@ import Product from "./Product";
 import HeaderAdmin from "../Components/HeaderAdmin";
 import AdminLogin from "./AdminLogin";
 import Sidebar from "../Components/Sidebar";
-import Advertisement from "./Advertisement";
 import AdminDashboard from "./AdminDashboard";
-import Subcategory from "./Subcategory";
 import AddProduct from "./AddProduct";
 import EditProduct from "./EditProduct";
 import UserDetails from "./UserDetails";
+import TextSliderManagement from "./TextSliderManage";
 
 function Dashboard() {
   return (
@@ -29,11 +28,10 @@ function Dashboard() {
           <Route path="/product" element={<Product />} />
           <Route path="/userlist" element={<UserList />} />
           <Route path="/coupons" element={<Coupons />} />
-          <Route path="/advertisement" element={<Advertisement />} />
-          <Route path="/subcategory" element={<Subcategory />} />
           <Route path="/add-product" element={<AddProduct />} />
           <Route path="/edit-product" element={<EditProduct />} />
           <Route path="/user-details" element={<UserDetails />} />
+            <Route path="/text-slider" element={<TextSliderManagement />} />
 
           <Route path="*" element={<Navigate to="/admin/dashboard" />} />
         </Routes>

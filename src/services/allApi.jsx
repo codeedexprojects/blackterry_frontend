@@ -51,7 +51,7 @@ export const getProfile = async (id) => {
 export const updateProfile = async (reqBody, id) => {
     try {
         const token = localStorage.getItem('userToken');
-        const response = await axios.get(`${BASE_URL}${API_ENDPOINTS.PROFILE}/${id}`, {
+        const response = await axios.get(`${BASE_URL}${API_ENDPOINTS.PROFILE}/${id}`,reqBody, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -314,5 +314,37 @@ export const getTextSlider = async () => {
         return response;
     } catch (error) {
         console.log(error);
+    }
+};
+
+export const cancelOrder = async (orderId, reqBody) => {
+    try {
+        const token = localStorage.getItem('userToken');
+        const response = await axios.post(`${BASE_URL}${API_ENDPOINTS.ORDER}/cancel/${orderId}`, reqBody, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        return response;
+    } catch (error) {
+        console.error('Cancel order error:', error);
+        throw error; // Re-throw to handle in component
+    }
+};
+
+export const returnOrder = async (orderId, reqBody) => {
+    try {
+        const token = localStorage.getItem('userToken');
+        const response = await axios.post(`${BASE_URL}${API_ENDPOINTS.ORDER}/return/${orderId}`, reqBody, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        return response;
+    } catch (error) {
+        console.error('Return order error:', error);
+        throw error; // Re-throw to handle in component
     }
 };

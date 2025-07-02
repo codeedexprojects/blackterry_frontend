@@ -7,18 +7,47 @@ import {
   FaChevronDown,
   FaEdit
 } from "react-icons/fa";
-import { Card, Col, Row, Spinner } from "react-bootstrap";
+import { Card, Col, Row, Spinner, Button, Modal, Form, Alert } from "react-bootstrap";
 import { useParams } from "react-router-dom";
 import tshirt4 from "/src/assets/tshirt7.jpg";
 import Header from "/src/Components/Header";
 import Footer from "/src/Components/Footer";
-import { orderById } from "../services/allApi";
+import { orderById, cancelOrder, returnOrder } from "../services/allApi";
 
 function OrderDetails() {
   const { orderId } = useParams();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Modal states
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [returnReason, setReturnReason] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [submitSuccess, setSubmitSuccess] = useState("");
+
+  // Predefined reasons
+  const cancelReasons = [
+    "Changed my mind",
+    "Found a better price elsewhere",
+    "Ordered by mistake",
+    "No longer needed",
+    "Delivery taking too long",
+    "Other"
+  ];
+
+  const returnReasons = [
+    "Product defective/damaged",
+    "Wrong item received",
+    "Size doesn't fit",
+    "Color different from expected",
+    "Quality not as expected",
+    "Product not as described",
+    "Other"
+  ];
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -47,6 +76,81 @@ function OrderDetails() {
       month: 'short',
       year: 'numeric'
     });
+  };
+
+  const handleCancelOrder = () => {
+    setShowCancelModal(true);
+    setSubmitError("");
+    setSubmitSuccess("");
+  };
+
+  const handleReturnOrder = () => {
+    setShowReturnModal(true);
+    setSubmitError("");
+    setSubmitSuccess("");
+  };
+
+  const submitCancelRequest = async () => {
+    if (!cancelReason.trim()) {
+      setSubmitError("Please provide a reason for cancellation");
+      return;
+    }
+
+    setSubmitting(true);
+    setSubmitError("");
+
+    try {
+      const response = await cancelOrder(orderId, { reason: cancelReason });
+      if (response) {
+        setSubmitSuccess("Cancel request submitted successfully! Admin will review your request.");
+        setTimeout(() => {
+          setShowCancelModal(false);
+          setCancelReason("");
+          setSubmitSuccess("");
+        }, 2000);
+      }
+    } catch (error) {
+      setSubmitError("Failed to submit cancel request. Please try again.");
+      console.error("Error canceling order:", error);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const submitReturnRequest = async () => {
+    if (!returnReason.trim()) {
+      setSubmitError("Please provide a reason for return");
+      return;
+    }
+
+    setSubmitting(true);
+    setSubmitError("");
+
+    try {
+      const response = await returnOrder(orderId, { reason: returnReason });
+      if (response) {
+        setSubmitSuccess("Return request submitted successfully! Admin will review your request.");
+        setTimeout(() => {
+          setShowReturnModal(false);
+          setReturnReason("");
+          setSubmitSuccess("");
+        }, 2000);
+      }
+    } catch (error) {
+      setSubmitError("Failed to submit return request. Please try again.");
+      console.error("Error returning order:", error);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const isWithinReturnPeriod = () => {
+    if (!order?.createdAt) return false;
+    const orderDate = new Date(order.createdAt);
+    const currentDate = new Date();
+    const diffTime = currentDate - orderDate;
+    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+    return diffDays <= 7;
   };
 
   if (loading) {
@@ -93,6 +197,9 @@ function OrderDetails() {
       </>
     );
   }
+
+  const showCancelButton = ["pending", "processing"].includes(order.status.toLowerCase());
+  const showReturnButton = order.status.toLowerCase() === "delivered" && isWithinReturnPeriod();
 
   return (
     <>
@@ -233,7 +340,167 @@ function OrderDetails() {
             </Card>
           </Col>
         </Row>
+
+        {/* Action Buttons */}
+        <div className="d-flex justify-content-end mt-4">
+          {showCancelButton && (
+            <Button 
+              variant="outline-danger" 
+              className="me-2"
+              onClick={handleCancelOrder}
+            >
+              Cancel Order
+            </Button>
+          )}
+          {showReturnButton && (
+            <Button 
+              variant="outline-primary"
+              onClick={handleReturnOrder}
+            >
+              Return Order
+            </Button>
+          )}
+        </div>
       </div>
+
+      {/* Cancel Order Modal */}
+      <Modal show={showCancelModal} onHide={() => setShowCancelModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Cancel Order</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {submitError && <Alert variant="danger">{submitError}</Alert>}
+          {submitSuccess && <Alert variant="success">{submitSuccess}</Alert>}
+          
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>Reason for cancellation *</Form.Label>
+              <Form.Select 
+                value={cancelReason} 
+                onChange={(e) => setCancelReason(e.target.value)}
+                disabled={submitting}
+              >
+                <option value="">Select a reason</option>
+                {cancelReasons.map((reason, index) => (
+                  <option key={index} value={reason}>{reason}</option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+            
+            {cancelReason === "Other" && (
+              <Form.Group className="mb-3">
+                <Form.Label>Please specify</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  placeholder="Please provide details..."
+                  value={cancelReason === "Other" ? "" : cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  disabled={submitting}
+                />
+              </Form.Group>
+            )}
+          </Form>
+          
+          <div className="text-muted small">
+            <strong>Note:</strong> Your cancellation request will be reviewed by our admin team. 
+            You'll be notified once the request is approved or declined.
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button 
+            variant="secondary" 
+            onClick={() => setShowCancelModal(false)}
+            disabled={submitting}
+          >
+            Close
+          </Button>
+          <Button 
+            variant="danger" 
+            onClick={submitCancelRequest}
+            disabled={submitting || !cancelReason.trim()}
+          >
+            {submitting ? (
+              <>
+                <Spinner size="sm" className="me-2" />
+                Submitting...
+              </>
+            ) : (
+              'Submit Cancel Request'
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Return Order Modal */}
+      <Modal show={showReturnModal} onHide={() => setShowReturnModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Return Order</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {submitError && <Alert variant="danger">{submitError}</Alert>}
+          {submitSuccess && <Alert variant="success">{submitSuccess}</Alert>}
+          
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>Reason for return *</Form.Label>
+              <Form.Select 
+                value={returnReason} 
+                onChange={(e) => setReturnReason(e.target.value)}
+                disabled={submitting}
+              >
+                <option value="">Select a reason</option>
+                {returnReasons.map((reason, index) => (
+                  <option key={index} value={reason}>{reason}</option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+            
+            {returnReason === "Other" && (
+              <Form.Group className="mb-3">
+                <Form.Label>Please specify</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  placeholder="Please provide details..."
+                  value={returnReason === "Other" ? "" : returnReason}
+                  onChange={(e) => setReturnReason(e.target.value)}
+                  disabled={submitting}
+                />
+              </Form.Group>
+            )}
+          </Form>
+          
+          <div className="text-muted small">
+            <strong>Note:</strong> Your return request will be reviewed by our admin team. 
+            You'll be notified once the request is approved. Returns are accepted within 7 days of delivery.
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button 
+            variant="secondary" 
+            onClick={() => setShowReturnModal(false)}
+            disabled={submitting}
+          >
+            Close
+          </Button>
+          <Button 
+            variant="primary" 
+            onClick={submitReturnRequest}
+            disabled={submitting || !returnReason.trim()}
+          >
+            {submitting ? (
+              <>
+                <Spinner size="sm" className="me-2" />
+                Submitting...
+              </>
+            ) : (
+              'Submit Return Request'
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
       <Footer />
     </>
   );
