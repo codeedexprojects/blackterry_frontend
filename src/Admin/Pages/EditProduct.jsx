@@ -1,18 +1,185 @@
-import React, { useState } from "react";
-import Sidebar from "../Components/Sidebar";
-import HeaderAdmin from "../Components/HeaderAdmin";
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom"; // Add this import
+import ProductInfoSection from "../Components/AddProduct/ProductInfo";
+import MediaDetailsSection from "../Components/AddProduct/MediaDetails";
 import AdminLayout from "../Components/AdminLayout";
+import { updateProduct, getProductById } from "../serveices/adminApi";
 
-function EditProduct() {
-  const [color, setColor] = useState("");
-  const [colors, setColors] = useState([]);
-  const [files, setFiles] = useState([]);
-
-  const handleAddColor = () => {
-    if (color && !colors.includes(color)) {
-      setColors([...colors, color]);
-      setColor("");
+const EditProductForm = () => {
+  const { id } = useParams(); 
+  const [loading, setLoading] = useState(true);
+  const [formData, setFormData] = useState({
+    title: "",
+    product_Code: "",
+    actualPrice: "",
+    discount: "",
+    offerPrice: "",
+    description: "",
+    manufacturerName: "",
+    manufacturerBrand: "",
+    manufacturerAddress: "",
+    isLatestProduct: false,
+    isOfferProduct: false,
+    isFeaturedProduct: false,
+    freeDelivery: false,
+    features: {
+      gender: "",
+      fit: "",
+      material: "",
+      neck: "",
+      sleevesType: "",
+      Length: "",
+      occasion: "",
+      innerLining: ""
     }
+  });
+
+  const [colors, setColors] = useState([]);
+  const [currentColor, setCurrentColor] = useState("");
+  const [files, setFiles] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
+
+  // Load product data on component mount
+  useEffect(() => {
+    const fetchProductData = async () => {
+      try {
+        setLoading(true);
+        const response = await getProductById(id);
+        const productData = response.data;
+        
+        // Set form data with existing product data
+        setFormData({
+          title: productData.title || "",
+          product_Code: productData.product_Code || "",
+          actualPrice: productData.actualPrice || "",
+          discount: productData.discount || "",
+          offerPrice: productData.offerPrice || "",
+          description: productData.description || "",
+          manufacturerName: productData.manufacturerName || "",
+          manufacturerBrand: productData.manufacturerBrand || "",
+          manufacturerAddress: productData.manufacturerAddress || "",
+          isLatestProduct: productData.isLatestProduct || false,
+          isOfferProduct: productData.isOfferProduct || false,
+          isFeaturedProduct: productData.isFeaturedProduct || false,
+          freeDelivery: productData.freeDelivery || false,
+          features: {
+            gender: productData.features?.gender || "",
+            fit: productData.features?.fit || "",
+            material: productData.features?.material || "",
+            neck: productData.features?.neck || "",
+            sleevesType: productData.features?.sleevesType || "",
+            Length: productData.features?.Length || "",
+            occasion: productData.features?.occasion || "",
+            innerLining: productData.features?.innerLining || ""
+          }
+        });
+
+        // Set colors data
+        setColors(productData.colors || []);
+        
+        // Set existing images
+        setExistingImages(productData.images || []);
+        
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching product data:', error);
+        setLoading(false);
+        // Handle error - maybe show error message or redirect
+      }
+    };
+
+    if (id) {
+      fetchProductData();
+    }
+  }, [id]);
+
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+
+    if (name.startsWith('features.')) {
+      const featureKey = name.split('.')[1];
+      setFormData(prev => ({
+        ...prev,
+        features: {
+          ...prev.features,
+          [featureKey]: value
+        }
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }));
+    }
+  };
+
+  // Calculate offer price when actual price or discount changes
+  const calculateOfferPrice = (actualPrice, discount) => {
+    if (actualPrice && discount) {
+      const discountAmount = (actualPrice * discount) / 100;
+      return actualPrice - discountAmount;
+    }
+    return "";
+  };
+
+  // Handle actual price change
+  const handleActualPriceChange = (e) => {
+    const value = e.target.value;
+    setFormData(prev => ({
+      ...prev,
+      actualPrice: value,
+      offerPrice: calculateOfferPrice(parseFloat(value), parseFloat(prev.discount))
+    }));
+  };
+
+  // Handle discount change
+  const handleDiscountChange = (e) => {
+    const value = e.target.value;
+    setFormData(prev => ({
+      ...prev,
+      discount: value,
+      offerPrice: calculateOfferPrice(parseFloat(prev.actualPrice), parseFloat(value))
+    }));
+  };
+
+  // Add new color with sizes
+  const handleAddColor = () => {
+    if (currentColor && !colors.find(c => c.color === currentColor)) {
+      const newColor = {
+        color: currentColor,
+        sizes: [
+          { size: "XS", stock: 0 },
+          { size: "S", stock: 0 },
+          { size: "M", stock: 0 },
+          { size: "L", stock: 0 },
+          { size: "XL", stock: 0 },
+          { size: "2XL", stock: 0 }
+        ]
+      };
+      setColors([...colors, newColor]);
+      setCurrentColor("");
+    }
+  };
+
+  // Update stock for specific color and size
+  const handleStockChange = (colorIndex, sizeIndex, stock) => {
+    const updatedColors = [...colors];
+    updatedColors[colorIndex].sizes[sizeIndex].stock = parseInt(stock) || 0;
+    setColors(updatedColors);
+  };
+
+  // Remove color
+  const removeColor = (colorIndex) => {
+    const updatedColors = colors.filter((_, index) => index !== colorIndex);
+    setColors(updatedColors);
+  };
+
+  // Calculate total stock
+  const calculateTotalStock = () => {
+    return colors.reduce((total, color) => {
+      return total + color.sizes.reduce((colorTotal, size) => colorTotal + size.stock, 0);
+    }, 0);
   };
 
   const handleFileChange = (e) => {
@@ -25,178 +192,129 @@ function EditProduct() {
     setFiles(updatedFiles);
   };
 
-  return (
-    <AdminLayout>
-      <h1 className="text-sm font-small mb-6">Edit product</h1>
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Left Panel */}
-        <div className="bg-white rounded-xl p-6 shadow-md">
-          <h2 className="text-lg font-semibold mb-4">Product Information</h2>
+  // Remove existing image
+  const removeExistingImage = (index) => {
+    const updatedImages = existingImages.filter((_, i) => i !== index);
+    setExistingImages(updatedImages);
+  };
 
-          <label className="block mb-2 font-medium">Product title*</label>
-          <input
-            type="text"
-            placeholder="Enter Product title"
-            className="w-full p-2 border rounded-md mb-4"
-          />
+  // Handle form submission
+  const handleSubmit = async (e) => {
+  e.preventDefault();
 
-          <div className="flex gap-4 mb-4">
-            <div className="flex-1">
-              <label className="block mb-2 font-medium">
-                Product Category*
-              </label>
-              <select className="w-full p-2 border rounded-md">
-                <option>Kurti</option>
-              </select>
-            </div>
-            <div className="flex-1">
-              <label className="block mb-2 font-medium">Sub Category*</label>
-              <select className="w-full p-2 border rounded-md">
-                <option>Ethnic Wear</option>
-              </select>
-            </div>
-          </div>
+  const formDataToSend = new FormData();
 
-          <div className="flex gap-4 mb-4">
-            <div className="flex-1">
-              <label className="block mb-2 font-medium">Actual Price*</label>
-              <input
-                type="text"
-                value="₹1000"
-                className="w-full p-2 border rounded-md"
-                readOnly
-              />
-            </div>
-            <div className="flex-1">
-              <label className="block mb-2 font-medium">Discount (%)*</label>
-              <input
-                type="text"
-                value="50%"
-                className="w-full p-2 border rounded-md"
-                readOnly
-              />
-            </div>
-          </div>
+  // Add basic product data (excluding features)
+  Object.keys(formData).forEach(key => {
+    if (key !== 'features') {
+      formDataToSend.append(key, formData[key]);
+    }
+  });
 
-          <label className="block mb-2 font-medium">Offer Price*</label>
-          <input
-            type="text"
-            value="₹500"
-            className="w-full p-2 border rounded-md mb-4"
-            readOnly
-          />
+  // Add features as individual fields
+  Object.keys(formData.features).forEach(featureKey => {
+    if (formData.features[featureKey]) { // Only add non-empty features
+      formDataToSend.append(`features[${featureKey}]`, formData.features[featureKey]);
+    }
+  });
 
-          <label className="block mb-2 font-medium">Product Description</label>
-          <textarea
-            className="w-full p-2 border rounded-md h-32"
-            defaultValue="For science, music, sport, etc, Europe uses the same vocabulary. The languages only differ in their grammar, their pronunciation and their most common words."
-          />
-        </div>
+  // Add colors data
+  formDataToSend.append('colors', JSON.stringify(colors));
 
-        {/* Right Panel */}
-        <div className="bg-white rounded-xl p-6 shadow-md">
-          <div className="mb-4 border-2 border-dashed border-brown-400 p-4 rounded-md flex flex-col items-center justify-center">
-            <p className="text-brown-700 mb-2">Browse Files to upload</p>
-            <input
-              type="file"
-              multiple
-              onChange={handleFileChange}
-              className="hidden"
-              id="fileUpload"
-            />
-            <label
-              htmlFor="fileUpload"
-              className="cursor-pointer bg-gray-200 px-4 py-2 rounded-md text-sm font-medium"
-            >
-              Choose Files
-            </label>
-          </div>
+  // Add calculated total stock
+  formDataToSend.append('totalStock', calculateTotalStock());
 
-          <ul className="mb-4">
-            {files.map((file, index) => (
-              <li
-                key={index}
-                className="flex items-center justify-between bg-gray-100 p-2 rounded mb-1"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center text-xs">
-                    📄
-                  </div>
-                  <span className="text-sm truncate max-w-xs">{file.name}</span>
-                </div>
-                <button
-                  onClick={() => removeFile(index)}
-                  className="text-brown-500"
-                >
-                  ✖
-                </button>
-              </li>
-            ))}
-          </ul>
+  // Add existing images (to keep track of which ones to keep)
+  formDataToSend.append('existingImages', JSON.stringify(existingImages));
 
-          <label className="block mb-2 font-medium">Manufacturer Name</label>
-          <input
-            type="text"
-            className="w-full p-2 border rounded-md mb-4"
-            placeholder="Enter Manufacturer Name"
-          />
+  // Add new images
+  files.forEach((file, index) => {
+    formDataToSend.append(`images`, file);
+  });
 
-          <label className="block mb-2 font-medium">Manufacturer Brand</label>
-          <input
-            type="text"
-            className="w-full p-2 border rounded-md mb-4"
-            placeholder="Enter Manufacturer Brand"
-          />
+  try {
+    const response = await updateProduct(id, formDataToSend);
+    console.log('Product updated successfully:', response);
+    // Handle success (e.g., show message, redirect, etc.)
+    alert('Product updated successfully!');
+  } catch (error) {
+    console.error('Error updating product:', error);
+    // Handle error
+    alert('Error updating product. Please try again.');
+  }
+};
 
-          <div className="mb-4">
-            <label className="block mb-2 font-medium">Colour</label>
-            <div className="flex gap-2 items-center">
-              <input
-                type="text"
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
-                className="p-2 border rounded-md flex-1"
-                placeholder="#HEX"
-              />
-              <button
-                onClick={handleAddColor}
-                className="px-3 py-2 bg-gray-200 rounded-md text-sm font-medium"
-              >
-                + ADD COLOUR
-              </button>
-            </div>
-            <div className="flex gap-2 mt-2">
-              {["#00C897", "#FFD500", "#00A1FF", "#FF4D6D"].map((c, i) => (
-                <div
-                  key={i}
-                  className="w-6 h-6 rounded-full"
-                  style={{ backgroundColor: c }}
-                />
-              ))}
-            </div>
-          </div>
+  const handleCancel = () => {
+    // Add your cancel logic here
+    console.log("Form cancelled");
+    // Example: navigate back or to products list
+    window.history.back();
+  };
 
-          <div className="mb-4">
-            <label className="block mb-2 font-medium">Size</label>
-            <div className="flex flex-wrap gap-2">
-              {["XS", "S", "M", "L", "XL", "2XL"].map((size, i) => (
-                <div
-                  key={i}
-                  className="px-4 py-1 bg-gray-100 border border-gray-300 rounded-md text-sm font-medium cursor-pointer hover:bg-gray-200"
-                >
-                  {size}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <button className="w-full bg-blue-600 text-white py-2 rounded-md text-lg font-medium hover:bg-blue-700">
-            SUBMIT PRODUCT
-          </button>
+  if (loading) {
+    return (
+      <div>
+        <div className="flex justify-center items-center h-64">
+          <div className="text-lg">Loading product data...</div>
         </div>
       </div>
-    </AdminLayout>
-  );
-}
+    );
+  }
 
-export default EditProduct;
+  return (
+    <div>
+      <form onSubmit={handleSubmit}>
+        <div className="p-4 md:p-6">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-900">Edit Product</h1>
+            <p className="text-gray-600">Update product information and details</p>
+          </div>
+
+          <div className="flex flex-col lg:grid lg:grid-cols-2 gap-6">
+            <ProductInfoSection
+              formData={formData}
+              handleInputChange={handleInputChange}
+              handleActualPriceChange={handleActualPriceChange}
+              handleDiscountChange={handleDiscountChange}
+            />
+
+            <MediaDetailsSection
+              formData={formData}
+              handleInputChange={handleInputChange}
+              files={files}
+              handleFileChange={handleFileChange}
+              removeFile={removeFile}
+              colors={colors}
+              currentColor={currentColor}
+              setCurrentColor={setCurrentColor}
+              handleAddColor={handleAddColor}
+              handleStockChange={handleStockChange}
+              removeColor={removeColor}
+              calculateTotalStock={calculateTotalStock}
+              existingImages={existingImages}
+              removeExistingImage={removeExistingImage}
+            />
+          </div>
+
+          <div className="mt-6 sticky bottom-0 bg-white py-3 border-t flex justify-end space-x-3">
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-900 hover:bg-amber-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
+            >
+              Update Product
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default EditProductForm;

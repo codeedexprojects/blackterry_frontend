@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { Plus, MoreHorizontal, Star, Edit, Trash2, Eye } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AdminLayout from "../Components/AdminLayout";
-import { getProducts } from "../serveices/adminApi";
+import { getProducts, deleteProduct } from "../serveices/adminApi";
+import ProductViewModal from "./SingleProduct";
 
 function Product() {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(null);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState(null);
+  const navigate = useNavigate();
 
   // Fetch products on component mount
   useEffect(() => {
@@ -69,31 +74,59 @@ function Product() {
     });
   };
 
-  // Handle dropdown actions
   const handleEdit = (productId) => {
-    // Navigate to edit page or open edit modal
+    navigate(`/admin/edit-product/${productId}`); 
     console.log("Edit product:", productId);
     setOpenDropdown(null);
   };
 
-  const handleDelete = (productId) => {
-    // Show confirmation and delete product
-    if (window.confirm("Are you sure you want to delete this product?")) {
-      console.log("Delete product:", productId);
-      // Add delete API call here
+  const handleDelete = async (productId) => {
+    // Show confirmation dialog
+    const isConfirmed = window.confirm("Are you sure you want to delete this product? This action cannot be undone.");
+    
+    if (!isConfirmed) {
+      setOpenDropdown(null);
+      return;
     }
-    setOpenDropdown(null);
+
+    try {
+      setDeleteLoading(productId);
+      const response = await deleteProduct(productId);
+      
+      if (response && response.status === 200) {
+        // Remove the deleted product from the products array
+        setProducts(prevProducts => prevProducts.filter(product => product._id !== productId));
+        
+        // Show success message (you can replace this with a toast notification)
+        alert("Product deleted successfully!");
+        
+        console.log("Product deleted successfully:", productId);
+      } else {
+        throw new Error("Failed to delete product");
+      }
+    } catch (err) {
+      console.error("Error deleting product:", err);
+      alert("Failed to delete product. Please try again.");
+    } finally {
+      setDeleteLoading(null);
+      setOpenDropdown(null);
+    }
   };
 
   const handleView = (productId) => {
-    // Navigate to product detail page
-    console.log("View product:", productId);
+    setSelectedProductId(productId);
+    setViewModalOpen(true);
     setOpenDropdown(null);
+  };
+
+  const closeViewModal = () => {
+    setViewModalOpen(false);
+    setSelectedProductId(null);
   };
 
   if (loading) {
     return (
-      <AdminLayout>
+      <div>
         <div className="max-w-7xl mx-auto mt-4">
           <div className="p-4">
             <div className="flex justify-center items-center h-64">
@@ -101,13 +134,13 @@ function Product() {
             </div>
           </div>
         </div>
-      </AdminLayout>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <AdminLayout>
+      <div>
         <div className="max-w-7xl mx-auto mt-4">
           <div className="p-4">
             <div className="text-center text-red-600 p-8">
@@ -121,13 +154,13 @@ function Product() {
             </div>
           </div>
         </div>
-      </AdminLayout>
+      </div>
     );
   }
 
   return (
-    <AdminLayout>
-      <div className="max-w-7xl mx-auto mt-4">
+    <div>
+      <div className="max-w-7xl mx-auto ">
         <div className="p-4">
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
@@ -264,8 +297,13 @@ function Product() {
                               toggleDropdown(index);
                             }}
                             className="p-1 hover:bg-gray-100 rounded-md transition-colors"
+                            disabled={deleteLoading === product._id}
                           >
-                            <MoreHorizontal className="w-5 h-5 text-gray-500" />
+                            {deleteLoading === product._id ? (
+                              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                            ) : (
+                              <MoreHorizontal className="w-5 h-5 text-gray-500" />
+                            )}
                           </button>
                           {openDropdown === index && (
                             <div className="absolute right-0 top-full mt-1 w-32 bg-white border border-gray-200 rounded-md shadow-lg z-10">
@@ -338,8 +376,13 @@ function Product() {
                             toggleDropdown(index);
                           }}
                           className="p-1 hover:bg-gray-100 rounded-md transition-colors"
+                          disabled={deleteLoading === product._id}
                         >
-                          <MoreHorizontal className="w-5 h-5 text-gray-500" />
+                          {deleteLoading === product._id ? (
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                          ) : (
+                            <MoreHorizontal className="w-5 h-5 text-gray-500" />
+                          )}
                         </button>
                         {openDropdown === index && (
                           <div className="absolute right-0 top-full mt-1 w-32 bg-white border border-gray-200 rounded-md shadow-lg z-10">
@@ -368,10 +411,12 @@ function Product() {
                         )}
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
+                    
+                    {/* Mobile Product Details */}
+                    <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <span className="text-gray-500 font-medium">Stock: </span>
-                        <span className={`font-semibold ${
+                        <span className="text-gray-500">Stock:</span>
+                        <span className={`ml-2 font-semibold ${
                           product.totalStock > 10 ? 'text-green-600' : 
                           product.totalStock > 0 ? 'text-yellow-600' : 'text-red-600'
                         }`}>
@@ -379,38 +424,37 @@ function Product() {
                         </span>
                       </div>
                       <div>
-                        <span className="text-gray-500 font-medium">Price: </span>
-                        {product.discount > 0 ? (
-                          <span className="text-gray-900 font-semibold">
-                            ₹{product.offerPrice}
-                          </span>
-                        ) : (
-                          <span className="text-gray-900 font-semibold">
-                            ₹{product.actualPrice}
-                          </span>
-                        )}
-                      </div>
-                      <div>
-                        <span className="text-gray-500 font-medium">Orders: </span>
-                        <span className="text-gray-700 font-semibold">
+                        <span className="text-gray-500">Orders:</span>
+                        <span className="ml-2 font-semibold text-gray-700">
                           {product.orderCount}
                         </span>
                       </div>
                       <div>
-                        <span className="text-gray-500 font-medium">Created: </span>
-                        <span className="text-gray-600 font-medium">
+                        <span className="text-gray-500">Price:</span>
+                        <div className="ml-2 inline-flex flex-col">
+                          {product.discount > 0 ? (
+                            <>
+                              <span className="text-sm font-semibold text-gray-900">
+                                ₹{product.offerPrice}
+                              </span>
+                              <span className="text-xs text-gray-500 line-through">
+                                ₹{product.actualPrice}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-sm font-semibold text-gray-900">
+                              ₹{product.actualPrice}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Created:</span>
+                        <span className="ml-2 font-medium text-gray-600">
                           {formatDate(product.createdAt)}
                         </span>
                       </div>
                     </div>
-                    {product.colors.length > 0 && (
-                      <div className="mt-2 pt-2 border-t border-gray-100">
-                        <span className="text-xs text-gray-500 font-medium">Colors: </span>
-                        <span className="text-xs text-gray-700">
-                          {product.colors.map(c => c.color).join(', ')}
-                        </span>
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
@@ -418,7 +462,16 @@ function Product() {
           )}
         </div>
       </div>
-    </AdminLayout>
+
+      {/* Product View Modal */}
+      {viewModalOpen && selectedProductId && (
+        <ProductViewModal
+          productId={selectedProductId}
+          isOpen={viewModalOpen}
+          onClose={closeViewModal}
+        />
+      )}
+    </div>
   );
 }
 

@@ -8,7 +8,8 @@ import {
   Users, 
   Receipt,
   X,
-  Text
+  Text,
+  Image
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import image from '/src/assets/footerlogo.png';
@@ -32,16 +33,15 @@ function Sidebar({ onNavigate, isMobile }) {
       icon: Text,
       path: '/admin/text-slider'
     },
-   
+    {
+      name: 'Carousels',
+      icon: Image,
+      path: '/admin/carousal'
+    },
     {
       name: 'Order List',
       icon: FileText,
       path: '/admin/orderlist'
-    },
-    {
-      name: 'Coupons',
-      icon: Tag,
-      path: '/admin/coupons'
     },
     {
       name: 'Users List',

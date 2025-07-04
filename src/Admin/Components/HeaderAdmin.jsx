@@ -7,7 +7,7 @@ function HeaderAdmin({ onMenuClick, isMobile }) {
   const [isLanguageOpen, setIsLanguageOpen] = useState(false);
 
   return (
-    <header className="bg-white border-b border-gray-200 px-4 md:px-6 py-4 fixed top-0 left-0 md:left-64 right-0 z-30">
+    <header className="bg-white border-b border-gray-200 px-4 md:px-6 py-4 flex-shrink-0">
       <div className="flex items-center justify-between gap-2">
         {/* Mobile Menu Button */}
         {isMobile && (
@@ -40,17 +40,15 @@ function HeaderAdmin({ onMenuClick, isMobile }) {
             <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors">
               <Bell className="w-5 h-5" />
             </button>
-            {/* Notification badge */}
             <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
           </div>
 
-          {/* Language Selector - Now visible on mobile */}
+          {/* Language Selector */}
           <div className="relative">
             <button
               onClick={() => setIsLanguageOpen(!isLanguageOpen)}
               className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
             >
-              {/* Mobile: Show only globe icon, Desktop: Show flag + text */}
               <div className="md:hidden">
                 <Globe className="w-5 h-5" />
               </div>
@@ -127,8 +125,6 @@ function HeaderAdmin({ onMenuClick, isMobile }) {
                   >
                     Sign In
                   </button>
-                 
-                 
                   <button 
                     className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50 transition-colors"
                     onClick={() => setIsProfileOpen(false)}

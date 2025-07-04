@@ -4,7 +4,7 @@ import ColorStockManager from "./ColorStock";
 import ProductFeatures from "./ProductFeatures";
 import ProductFlags from "./ProductFlags";
 
-const MediaDetailsSection = ({
+const EditMediaDetailsSection = ({
   formData,
   handleInputChange,
   files,
@@ -74,6 +74,8 @@ const MediaDetailsSection = ({
           handleInputChange={handleInputChange}
         />
 
+      
+
         <ColorStockManager
           colors={colors}
           currentColor={currentColor}
@@ -88,4 +90,4 @@ const MediaDetailsSection = ({
   );
 };
 
-export default MediaDetailsSection;
+export default EditMediaDetailsSection;

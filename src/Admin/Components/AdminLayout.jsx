@@ -9,21 +9,18 @@ function AdminLayout({ children, title }) {
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
-      // Close sidebar when switching to desktop
       if (window.innerWidth >= 768) {
         setIsMobileSidebarOpen(false);
       }
     };
 
-    // Set initial value
     handleResize();
-    
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* Mobile Overlay */}
       {isMobile && isMobileSidebarOpen && (
         <div 
@@ -47,14 +44,18 @@ function AdminLayout({ children, title }) {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 md:ml-64">
+      <div className="flex-1 flex flex-col md:ml-64 overflow-hidden">
         <HeaderAdmin 
           onMenuClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
           isMobile={isMobile}
         />
-        <main className="p-4 md:p-7 mt-16">
-          {title && <h1 className="text-xl font-semibold text-gray-900 mb-4">{title}</h1>}
-          {children}
+        
+        {/* Main Content with proper scrolling */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-4 md:p-7">
+            {title && <h1 className="text-xl font-semibold text-gray-900 mb-4">{title}</h1>}
+            {children}
+          </div>
         </main>
       </div>
     </div>

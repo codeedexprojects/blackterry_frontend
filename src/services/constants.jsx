@@ -9,5 +9,10 @@ export const API_ENDPOINTS = {
     CART:'/cart',
     CHECKOUT:'/checkout',
     ORDER:'/orders',
-    TEXT_SLIDER:'/text-sliders'
+    TEXT_SLIDER:'/text-sliders',
+    CAROUSEL:'/carousel',
+    USERS:'/user-management',
+    ADMIN_AUTH:'/admin-auth',
+    INVOICE:'/invoice',
+    DASHBOARD:'/dashboard',
 }

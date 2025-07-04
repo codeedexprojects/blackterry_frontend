@@ -2,7 +2,7 @@ import React from "react";
 import ProductFeatures from "./ProductFeatures";
 import ProductFlags from "./ProductFlags";
 
-const ProductInfoSection = ({
+const EditProductInfoSection = ({
   formData,
   handleInputChange,
   handleActualPriceChange,
@@ -112,4 +112,4 @@ const ProductInfoSection = ({
   );
 };
 
-export default ProductInfoSection;
+export default EditProductInfoSection;

@@ -1,12 +1,53 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { adminLogin } from "../serveices/adminApi";
 
 function AdminLogin() {
+  const [credentials, setCredentials] = useState({
+    email: "",
+    password: ""
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setCredentials(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await adminLogin(credentials);
+      
+      // Store token in localStorage
+      localStorage.setItem("adminToken", response.token);
+      
+      // Store admin data if needed
+      localStorage.setItem("adminData", JSON.stringify(response.admin));
+      
+      // Redirect to admin dashboard
+      navigate("/admin/dashboard");
+    } catch (error) {
+      setError(error.response?.data?.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen w-full relative overflow-hidden">
       {/* Gradient Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-pink-600 via-orange-500 to-yellow-400"></div>
 
-      {/* Additional gradient overlays for more complexity */}
+      {/* Additional gradient overlays */}
       <div className="absolute inset-0 bg-gradient-to-tr from-black via-transparent to-orange-400 opacity-70"></div>
       <div className="absolute inset-0 bg-gradient-to-bl from-transparent via-purple-800 to-pink-700 opacity-60"></div>
 
@@ -19,16 +60,20 @@ function AdminLogin() {
             {/* Header */}
             <div className="text-center mb-8">
               <h1 className="text-white text-2xl font-semibold mb-2">
-                Login to Account
+                Admin Login
               </h1>
               <p className="text-white/80 text-xs">
-                Please enter your email and password to continue
+                Please enter your credentials to continue
               </p>
             </div>
 
-            {/* Form */}
-            <div className="space-y-6">
-              {/* Email Field */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-500/20 text-red-100 text-sm rounded-lg">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label className="block text-white/90 text-sm font-medium mb-2">
                   Email address
@@ -36,56 +81,49 @@ function AdminLogin() {
                 <input
                   type="email"
                   name="email"
+                  value={credentials.email}
+                  onChange={handleChange}
+                  required
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-transparent backdrop-blur-sm"
-                  placeholder="enter-email"
+                  placeholder="admin@example.com"
                 />
               </div>
 
-              {/* Username Field */}
               <div>
                 <label className="block text-white/90 text-sm font-medium mb-2">
                   Password
                 </label>
                 <input
-                  type="text"
-                  name="username"
+                  type="password"
+                  name="password"
+                  value={credentials.password}
+                  onChange={handleChange}
+                  required
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-transparent backdrop-blur-sm"
-                  placeholder="password"
+                  placeholder="••••••••"
                 />
               </div>
 
-              {/* Terms Checkbox */}
-              <div className="flex items-center space-x-3">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 text-white bg-white/10 border-white/20 rounded focus:ring-white/30 focus:ring-2"
-                />
-                <label htmlFor="terms" className="text-white/90 text-sm">
-                  Remember Password
-                </label>
-              </div>
-
-              {/* Sign Up Button */}
               <button
-                type="button"
-                className="w-full bg-black/40 hover:bg-black/50 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/10"
+                type="submit"
+                disabled={loading}
+                className={`w-full ${
+                  loading ? "bg-black/30" : "bg-black/40 hover:bg-black/50"
+                } text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/10 flex justify-center items-center`}
               >
-                Sign In
+                {loading ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Processing...
+                  </>
+                ) : (
+                  "Sign In"
+                )}
               </button>
-
-              {/* Login Link */}
-              <div className="text-center">
-                <p className="text-white/80 text-sm">
-                  Don't have an account?{" "}
-                  <button
-                    type="button"
-                    className="text-blue-300 hover:text-blue-200 font-medium transition-colors"
-                  >
-                    Create Account
-                  </button>
-                </p>
-              </div>
-            </div>
+            </form>
           </div>
         </div>
       </div>

@@ -12,7 +12,7 @@ function UserDetails() {
   }
 
   return (
-    <AdminLayout>
+    <div>
       <div className="p-4 md:p-6">
         <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-4 md:mb-6">
           Users Management
@@ -252,7 +252,7 @@ function UserDetails() {
           </div>
         </div>
       )}
-    </AdminLayout>
+    </div>
   );
 }
 

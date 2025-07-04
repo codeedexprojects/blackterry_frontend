@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import ProductInfoSection from "../Components/AddProduct/ProductInfo";
 import MediaDetailsSection from "../Components/AddProduct/MediaDetails";
-import AdminLayout from "../Components/AdminLayout";
 import { addProduct } from "../serveices/adminApi";
+import { useNavigate } from "react-router-dom";
 
 const AddProductForm = () => {
- const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState({
     title: "",
     product_Code: "",
     actualPrice: "",
@@ -36,9 +36,12 @@ const AddProductForm = () => {
   const [files, setFiles] = useState([]);
 
   // Handle form input changes
+
+  // For redirection after successful submit
+  const navigate = useNavigate();
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    
+
     if (name.startsWith('features.')) {
       const featureKey = name.split('.')[1];
       setFormData(prev => ({
@@ -137,27 +140,32 @@ const AddProductForm = () => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const formDataToSend = new FormData();
-    
-    // Add basic product data
+
+    // Add basic product data (excluding features)
     Object.keys(formData).forEach(key => {
-      if (key === 'features') {
-        formDataToSend.append('features', JSON.stringify(formData.features));
-      } else {
+      if (key !== 'features') {
         formDataToSend.append(key, formData[key]);
       }
     });
-    
+
+    // Add features as individual fields
+    Object.keys(formData.features).forEach(featureKey => {
+      if (formData.features[featureKey]) { // Only add non-empty features
+        formDataToSend.append(`features[${featureKey}]`, formData.features[featureKey]);
+      }
+    });
+
     // Add colors data
     formDataToSend.append('colors', JSON.stringify(colors));
-    
+
     // Add calculated total stock
     formDataToSend.append('totalStock', calculateTotalStock());
-    
+
     // Add default values
     formDataToSend.append('orderCount', 0);
-    
+
     // Add images
     files.forEach((file, index) => {
       formDataToSend.append(`images`, file);
@@ -166,19 +174,23 @@ const AddProductForm = () => {
     try {
       const response = await addProduct(formDataToSend);
       console.log('Product added successfully:', response);
-      // Handle success (e.g., show message, redirect, etc.)
+      navigate('/admin/product');
     } catch (error) {
       console.error('Error adding product:', error);
-      // Handle error
+  
     }
   };
+  const handleCancel = () => {
+    console.log("Form cancelled");
+  };
+
 
   return (
-    <AdminLayout>
-      <div className="p-4 md:p-6">
-        <h1 className="text-2xl font-bold mb-6">Create product</h1>
+    <div>
+      <form onSubmit={handleSubmit}>
+        <div className="p-4 md:p-6">
 
-        <form onSubmit={handleSubmit}>
+
           <div className="flex flex-col lg:grid lg:grid-cols-2 gap-6">
             <ProductInfoSection
               formData={formData}
@@ -186,7 +198,7 @@ const AddProductForm = () => {
               handleActualPriceChange={handleActualPriceChange}
               handleDiscountChange={handleDiscountChange}
             />
-            
+
             <MediaDetailsSection
               formData={formData}
               handleInputChange={handleInputChange}
@@ -202,9 +214,26 @@ const AddProductForm = () => {
               calculateTotalStock={calculateTotalStock}
             />
           </div>
-        </form>
-      </div>
-    </AdminLayout>
+
+          <div className="mt-6 sticky bottom-0 bg-white py-3 border-t flex justify-end space-x-3">
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-900 hover:bg-amber-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
+            >
+              Submit Product
+            </button>
+          </div>
+
+        </div>
+      </form>
+    </div>
   );
 };
 
