@@ -14,75 +14,129 @@ import CarouselManagement from "./CarousalManage";
 import EditProductForm from "./EditProduct";
 
 function AdminRoutes() {
+  // Inline ProtectedRoute function
+  const ProtectedRoute = ({ children }) => {
+    const adminToken = localStorage.getItem("adminToken");
+    return adminToken ? children : <Navigate to="/admin/login" />;
+  };
+
   return (
     <Routes>
-      {/* Login route without layout */}
+      {/* Admin login route (public) */}
       <Route path="/login" element={<AdminLogin />} />
-      
-      {/* All other routes with AdminLayout */}
-      <Route path="/dashboard" element={
-        <AdminLayout >
-          <AdminDashboard />
-        </AdminLayout>
-      } />
-      
-      <Route path="/orderlist" element={
-        <AdminLayout >
-          <Orderlist />
-        </AdminLayout>
-      } />
-      
-      <Route path="/invoice" element={
-        <AdminLayout >
-          <Invoice />
-        </AdminLayout>
-      } />
-      
-      <Route path="/product" element={
-        <AdminLayout >
-          <Product />
-        </AdminLayout>
-      } />
-      
-      <Route path="/add-product" element={
-        <AdminLayout>
-          <AddProduct />
-        </AdminLayout>
-      } />
-      
-      <Route path="/edit-product/:id" element={
-        <AdminLayout >
-          <EditProductForm />
-        </AdminLayout>
-      } />
-      
-      <Route path="/userlist" element={
-        <AdminLayout >
-          <UserList />
-        </AdminLayout>
-      } />
-      
-      <Route path="/user-details" element={
-        <AdminLayout >
-          <UserDetails />
-        </AdminLayout>
-      } />
-      
-      
-      
-      <Route path="/text-slider" element={
-        <AdminLayout >
-          <TextSliderManagement />
-        </AdminLayout>
-      } />
-      
-      <Route path="/carousal" element={
-        <AdminLayout >
-          <CarouselManagement />
-        </AdminLayout>
-      } />
-      
-      {/* Redirect routes */}
+
+      {/* All protected admin routes */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <AdminLayout>
+              <AdminDashboard />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/orderlist"
+        element={
+          <ProtectedRoute>
+            <AdminLayout>
+              <Orderlist />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/invoice"
+        element={
+          <ProtectedRoute>
+            <AdminLayout>
+              <Invoice />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/product"
+        element={
+          <ProtectedRoute>
+            <AdminLayout>
+              <Product />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/add-product"
+        element={
+          <ProtectedRoute>
+            <AdminLayout>
+              <AddProduct />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/edit-product/:id"
+        element={
+          <ProtectedRoute>
+            <AdminLayout>
+              <EditProductForm />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/userlist"
+        element={
+          <ProtectedRoute>
+            <AdminLayout>
+              <UserList />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/user-details"
+        element={
+          <ProtectedRoute>
+            <AdminLayout>
+              <UserDetails />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/text-slider"
+        element={
+          <ProtectedRoute>
+            <AdminLayout>
+              <TextSliderManagement />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/carousal"
+        element={
+          <ProtectedRoute>
+            <AdminLayout>
+              <CarouselManagement />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Redirects */}
       <Route path="/" element={<Navigate to="/admin/dashboard" />} />
       <Route path="*" element={<Navigate to="/admin/dashboard" />} />
     </Routes>

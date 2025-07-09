@@ -156,7 +156,7 @@ function Home() {
             Discover our newest arrivals
           </p>
         </div>
-         <FilterBar />
+         {/* <FilterBar /> */}
         
         <ProductGrid products={latestProducts} loading={loading} error={error} />
         

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "/src/Components/Header";
 import Footer from "/src/Components/Footer";
 import { createCheckout, deletCart, getCart, updateCart } from "../services/allApi";
+import { toast, ToastContainer } from "react-toastify";
 
 function Cart() {
   const navigate = useNavigate();
@@ -63,26 +64,38 @@ function Cart() {
   };
 
   const handleCheckout = async () => {
-    const userId = localStorage.getItem('userId'); 
+    const userId = localStorage.getItem('userId');
     const reqBody = {
-      userId: userId, // payload for API
-    }
+      userId: userId,
+    };
+
     try {
       const response = await createCheckout(reqBody);
+
       if (response && response.status === 201) {
-         const checkoutId = response.data.checkoutId;
-         navigate("/checkout", {
-        state: {
-          checkoutId: checkoutId,
-        },
-      });
+        const checkoutId = response.data.checkoutId;
+        navigate("/checkout", {
+          state: {
+            checkoutId: checkoutId,
+          },
+        });
       } else {
+        // Handle non-201 success responses that still have error messages
+        const errorMessage = response?.data?.message || response?.message || 'Checkout creation failed';
+        toast.error(errorMessage);
         console.error('Checkout creation failed:', response);
       }
     } catch (err) {
+      // Handle API errors (400, 500, etc.)
+      const apiErrorMessage = err?.response?.data?.message ||
+        err?.response?.message ||
+        err?.message ||
+        'Error during checkout';
+      toast.error(apiErrorMessage);
       console.error('Error during checkout:', err);
     }
   };
+
 
   const updateQuantity = async (id, newQuantity) => {
     if (newQuantity < 1) return;
@@ -227,6 +240,7 @@ function Cart() {
   return (
     <div className="min-vh-100 d-flex flex-column">
       <Header />
+      <ToastContainer></ToastContainer>
       <main className="flex-grow-1">
         <div className="container my-4 px-3 px-md-4">
           {/* Error Alert */}

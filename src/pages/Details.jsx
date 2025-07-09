@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { FaHeart, FaMinus, FaPlus, FaShoppingCart, FaTruck, FaRegCreditCard, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { FaHeart, FaRegHeart, FaMinus, FaPlus, FaShoppingCart, FaTruck, FaRegCreditCard, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import Footer from '/src/Components/Footer'
 import { IoMdInformationCircleOutline } from "react-icons/io";
-import { addToCart, getProductById, buyNow } from "../services/allApi";
+import { addToCart, getProductById, buyNow, addToWishlist, getWishlist } from "../services/allApi";
 import Header from "/src/Components/Header";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -17,6 +17,11 @@ function Details() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [buyNowLoading, setBuyNowLoading] = useState(false);
+
+  // Wishlist states
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [isInWishlist, setIsInWishlist] = useState(false);
+  const [checkingWishlist, setCheckingWishlist] = useState(true);
 
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState("");
@@ -50,6 +55,9 @@ function Details() {
           setMainImage(productData.images[0]);
         }
 
+        // Check wishlist status after product is loaded
+        checkWishlistStatus();
+
       } catch (err) {
         setError('Failed to load product details');
         console.error('Error fetching product:', err);
@@ -62,6 +70,68 @@ function Details() {
       fetchProduct();
     }
   }, [id]);
+
+  const checkWishlistStatus = async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        setCheckingWishlist(false);
+        return;
+      }
+
+      const response = await getWishlist(userId);
+      
+      if (response?.data?.items) {
+        const isProductInWishlist = response.data.items.some(
+          item => item.productId._id === id
+        );
+        setIsInWishlist(isProductInWishlist);
+      }
+    } catch (error) {
+      console.error("Error checking wishlist status:", error);
+      // Don't show toast for wishlist check error to avoid spam
+    } finally {
+      setCheckingWishlist(false);
+    }
+  };
+
+  const handleAddToWishlist = async () => {
+    if (wishlistLoading || checkingWishlist) return;
+    
+    setWishlistLoading(true);
+    
+    try {
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        toast.info("Please login to add items to your wishlist");
+        return;
+      }
+
+      const reqBody = {
+        userId: userId,
+        productId: product._id
+      };
+
+      const response = await addToWishlist(reqBody);
+      
+      if (response.data) {
+        // Toggle wishlist status
+        setIsInWishlist(!isInWishlist);
+        
+        // Show appropriate message based on action
+        const message = isInWishlist 
+          ? "Removed from wishlist successfully"
+          : "Added to wishlist successfully";
+          
+        toast.success(response.data.message || message);
+      }
+    } catch (error) {
+      console.error("Wishlist error:", error);
+      toast.error(error.response?.data?.message || "Failed to update wishlist");
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
 
   const getAvailableSizes = () => {
     if (!product || !selectedColor) return [];
@@ -424,8 +494,31 @@ function Details() {
                     <FaShoppingCart />
                     {currentStock > 0 ? 'Add to cart' : 'Out of stock'}
                   </button>
-                  <button className="btn btn-outline-dark py-3 px-3 d-flex align-items-center justify-content-center">
-                    <FaHeart />
+                  <button 
+                    className="btn btn-outline-dark py-3 px-3 d-flex align-items-center justify-content-center"
+                    onClick={handleAddToWishlist}
+                    disabled={wishlistLoading || checkingWishlist}
+                    title={
+                      checkingWishlist
+                        ? "Checking wishlist..."
+                        : isInWishlist
+                        ? "Remove from wishlist"
+                        : "Add to wishlist"
+                    }
+                  >
+                    {wishlistLoading ? (
+                      <div className="spinner-border spinner-border-sm" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                    ) : checkingWishlist ? (
+                      <div className="spinner-border spinner-border-sm" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                    ) : isInWishlist ? (
+                      <FaHeart style={{ color: "#50311D" }} />
+                    ) : (
+                      <FaRegHeart />
+                    )}
                   </button>
                 </div>
 

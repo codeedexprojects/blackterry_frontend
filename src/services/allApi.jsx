@@ -51,7 +51,7 @@ export const getProfile = async (id) => {
 export const updateProfile = async (reqBody, id) => {
     try {
         const token = localStorage.getItem('userToken');
-        const response = await axios.get(`${BASE_URL}${API_ENDPOINTS.PROFILE}/${id}`,reqBody, {
+        const response = await axios.get(`${BASE_URL}${API_ENDPOINTS.PROFILE}/${id}`, reqBody, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -148,7 +148,7 @@ export const addToWishlist = async (reqBody) => {
 export const removeWishlist = async (reqBody) => {
     try {
         const response = await axios.delete(`${BASE_URL}${API_ENDPOINTS.WISHLIST}`, {
-            data: reqBody  
+            data: reqBody
         });
         return response;
     } catch (error) {
@@ -235,6 +235,7 @@ export const createCheckout = async (reqBody) => {
         return response;
     } catch (error) {
         console.log(error);
+        throw error;
     }
 };
 

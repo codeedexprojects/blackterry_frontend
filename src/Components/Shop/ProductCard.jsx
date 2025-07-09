@@ -5,7 +5,6 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import { toast } from "react-toastify";
 import { addToWishlist, getWishlist } from "../../services/allApi";
-import { showToast } from "../CustomeToast";
 
 const ShopProductCard = ({ product }) => {
   const [loading, setLoading] = useState(false);
@@ -38,6 +37,15 @@ const ShopProductCard = ({ product }) => {
       }
     } catch (error) {
       console.error("Error checking wishlist status:", error);
+      toast.error("Failed to check wishlist status", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     } finally {
       setCheckingWishlist(false);
     }
@@ -54,7 +62,15 @@ const ShopProductCard = ({ product }) => {
     try {
       const userId = localStorage.getItem("userId");
       if (!userId) {
-        toast.info("Please login to add items to your wishlist");
+        toast.info("Please login to add items to your wishlist", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
         return;
       }
 
@@ -66,19 +82,33 @@ const ShopProductCard = ({ product }) => {
       const response = await addToWishlist(reqBody);
       
       if (response.data) {
-        // Toggle wishlist status
         setIsInWishlist(!isInWishlist);
         
-        // Show appropriate message based on action
         const message = isInWishlist 
           ? "Removed from wishlist successfully"
           : "Added to wishlist successfully";
           
-         showToast('success', response.data.message || message);
+        toast.success(response.data.message || message, {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
       }
     } catch (error) {
       console.error("Wishlist error:", error);
-      toast.error(error.response?.data?.message || "Failed to update wishlist");
+      toast.error(error.response?.data?.message || "Failed to update wishlist", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     } finally {
       setLoading(false);
     }

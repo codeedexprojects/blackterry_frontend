@@ -5,7 +5,6 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import { toast } from "react-toastify";
 import { addToWishlist, getWishlist } from "../../services/allApi";
-import { showToast } from "../CustomeToast";
 
 const ProductCard = ({ product }) => {
   const [loading, setLoading] = useState(false);
@@ -40,6 +39,7 @@ const ProductCard = ({ product }) => {
       }
     } catch (error) {
       console.error("Error checking wishlist status:", error);
+      toast.error("Failed to check wishlist status");
     } finally {
       setCheckingWishlist(false);
     }
@@ -76,11 +76,27 @@ const ProductCard = ({ product }) => {
           ? "Removed from wishlist successfully"
           : "Added to wishlist successfully";
           
-         showToast('success', response.data.message || message);
+        toast.success(response.data.message || message, {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
       }
     } catch (error) {
       console.error("Wishlist error:", error);
-      toast.error(error.response?.data?.message || "Failed to update wishlist");
+      toast.error(error.response?.data?.message || "Failed to update wishlist", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     } finally {
       setLoading(false);
     }
