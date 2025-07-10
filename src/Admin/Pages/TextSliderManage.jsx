@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, ToggleLeft, ToggleRight, Loader } from 'lucide-react';
+import { Plus, Edit2, Trash2, ToggleLeft, ToggleRight, Loader, X } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { addTextSlider, deleteTextSlider, getTextSliders, updateTextSlider } from '../serveices/adminApi';
 import AdminLayout from '../Components/AdminLayout';
@@ -13,6 +13,7 @@ const TextSliderManagement = () => {
   });
   const [editMode, setEditMode] = useState(false);
   const [currentId, setCurrentId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Fetch all text sliders
   const fetchSliders = async () => {
@@ -52,7 +53,7 @@ const TextSliderManagement = () => {
         toast.success('Text slider added successfully');
       }
       fetchSliders();
-      resetForm();
+      closeModal();
     } catch (error) {
       toast.error(`Failed to ${editMode ? 'update' : 'add'} text slider`);
     }
@@ -66,6 +67,7 @@ const TextSliderManagement = () => {
     });
     setCurrentId(slider._id);
     setEditMode(true);
+    openModal();
   };
 
   // Delete slider
@@ -92,77 +94,30 @@ const TextSliderManagement = () => {
     }
   };
 
-  // Reset form
-  const resetForm = () => {
+  // Modal handlers
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
     setFormData({ title: '', isActive: true });
     setEditMode(false);
     setCurrentId(null);
   };
 
   return (
-    <div>
-    <div className=" mx-auto ">
+    <div className="mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Text Sliders</h1>
-      </div>
-
-      {/* Add/Edit Form */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6 mb-6">
-        <h2 className="text-lg font-semibold mb-4">
-          {editMode ? 'Edit Text Slider' : 'Add New Text Slider'}
-        </h2>
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Slider Text*
-              </label>
-              <input
-                type="text"
-                name="title"
-                value={formData.title}
-                onChange={handleInputChange}
-                placeholder="Enter slider text (e.g., Summer Sale)"
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                required
-              />
-            </div>
-
-            <div className="flex items-center">
-              <label className="inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="isActive"
-                  checked={formData.isActive}
-                  onChange={handleInputChange}
-                  className="sr-only peer"
-                />
-                <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                <span className="ms-3 text-sm font-medium text-gray-700">
-                  {formData.isActive ? 'Active' : 'Inactive'}
-                </span>
-              </label>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
-                {editMode ? 'Update Slider' : 'Add Slider'}
-              </button>
-              {editMode && (
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
-                >
-                  Cancel
-                </button>
-              )}
-            </div>
-          </div>
-        </form>
+        <button
+          onClick={openModal}
+          style={{backgroundColor:"#50311D"}}
+          className="flex items-center gap-2 px-4 py-2  text-white rounded-md  transition-colors"
+        >
+          <Plus size={18} />
+          Add New Slider
+        </button>
       </div>
 
       {/* Sliders List */}
@@ -228,7 +183,77 @@ const TextSliderManagement = () => {
           </div>
         )}
       </div>
-    </div>
+
+      {/* Add/Edit Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
+            <div className="flex justify-between items-center border-b border-gray-200 p-4">
+              <h2 className="text-lg font-semibold">
+                {editMode ? 'Edit Text Slider' : 'Add New Text Slider'}
+              </h2>
+              <button
+                onClick={closeModal}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="p-4">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Slider Text*
+                  </label>
+                  <input
+                    type="text"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleInputChange}
+                    placeholder="Enter slider text (e.g., Summer Sale)"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+
+                <div className="flex items-center">
+                  <label className="inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="isActive"
+                      checked={formData.isActive}
+                      onChange={handleInputChange}
+                      className="sr-only peer"
+                    />
+                    <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    <span className="ms-3 text-sm font-medium text-gray-700">
+                      {formData.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  </label>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    style={{backgroundColor:"#50311D"}}
+                    className="px-4 py-2  text-white rounded-md  transition-colors"
+                  >
+                    {editMode ? 'Update Slider' : 'Add Slider'}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

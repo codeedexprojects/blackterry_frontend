@@ -3,18 +3,22 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaRegUser,
+  FaTimes,
 } from 'react-icons/fa';
 import { GrFavorite } from 'react-icons/gr';
 import { IoBagHandleOutline, IoSearchSharp } from 'react-icons/io5';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getTextSlider, getCart } from '../services/allApi';
 
 const Header = ({ cartUpdated }) => {
+  const navigate = useNavigate();
   const [textSliders, setTextSliders] = useState([]);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [cartCount, setCartCount] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Fetch text slider data
   useEffect(() => {
@@ -98,6 +102,32 @@ const Header = ({ cartUpdated }) => {
     return textSliders[currentSlideIndex]?.title || 'BLACK TERRY';
   };
 
+  // Handle search functionality
+  const handleSearchClick = () => {
+    setIsSearchOpen(true);
+  };
+
+  const handleSearchClose = () => {
+    setIsSearchOpen(false);
+    setSearchQuery('');
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      // Navigate to shop page with search query
+      navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
+      setIsSearchOpen(false);
+      setSearchQuery('');
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearchSubmit(e);
+    }
+  };
+
   return (
     <header className="w-full">
       {/* Enhanced Top Slider Section */}
@@ -174,8 +204,8 @@ const Header = ({ cartUpdated }) => {
         )}
       </div>
 
-      {/* Main Header (rest of your code remains the same) */}
-      <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 bg-white">
+      {/* Main Header */}
+      <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 bg-white relative">
         {/* Left menu */}
         <nav className="flex gap-6 text-sm mb-2 sm:mb-0">
           <a href="/" className="text-black hover:text-[#D9CEBF] transition-colors">NEW</a>
@@ -188,9 +218,12 @@ const Header = ({ cartUpdated }) => {
         <h1 className="text-2xl font-bold tracking-wide text-black">BLACK TERRY</h1>
 
         <div className="flex gap-4 mt-2 sm:mt-0 text-lg">
-          <Link to="/search" className="text-black hover:text-[#D9CEBF] transition-colors">
+          <button 
+            onClick={handleSearchClick}
+            className="text-black hover:text-[#D9CEBF] transition-colors"
+          >
             <IoSearchSharp className="cursor-pointer" />
-          </Link>
+          </button>
           <Link to="/wishlist" className="text-black hover:text-[#D9CEBF] transition-colors">
             <GrFavorite className="cursor-pointer" />
           </Link>
@@ -205,6 +238,47 @@ const Header = ({ cartUpdated }) => {
           </Link>
         </div>
       </div>
+
+      {/* Search Overlay */}
+      {isSearchOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-start justify-center pt-20">
+          <div className="bg-white w-full max-w-2xl mx-4 rounded-lg shadow-xl">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-gray-800">Search Products</h2>
+                <button
+                  onClick={handleSearchClose}
+                  className="text-gray-500 hover:text-gray-700 transition-colors"
+                >
+                  <FaTimes className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <form onSubmit={handleSearchSubmit} className="relative">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Search for products..."
+                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D9CEBF] focus:border-transparent text-gray-800 placeholder-gray-500"
+                  autoFocus
+                />
+                <button
+                  type="submit"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-[#5c4432] transition-colors"
+                >
+                  <IoSearchSharp className="w-5 h-5" />
+                </button>
+              </form>
+              
+              <div className="mt-4 text-sm text-gray-600">
+                <p>Press Enter or click the search icon to find products</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 };

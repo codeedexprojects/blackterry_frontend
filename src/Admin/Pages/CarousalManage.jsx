@@ -139,8 +139,9 @@ const CarouselManager = () => {
                  
                 </div>
                 <button
+                style={{backgroundColor:"#50311D"}}
                   onClick={() => setShowAddForm(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                  className=" text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
                 >
                   <Plus size={20} />
                   Add New Carousel
@@ -223,7 +224,8 @@ const CarouselManager = () => {
                   <div className="flex gap-4">
                     <button
                       type="submit"
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                      style={{backgroundColor:"#50311D"}}
+                      className="text-white px-6 py-2 rounded-lg flex items-center gap-2 transition-colors"
                     >
                       <Save size={20} />
                       {editingItem ? 'Update' : 'Save'}

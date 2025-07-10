@@ -5,10 +5,15 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Trash2,
+  X,
+  AlertTriangle,
+  Trash,
+  Trash2Icon,
 } from "lucide-react";
 import "react-datepicker/dist/react-datepicker.css";
 import Datepicker from "react-datepicker";
-import { getInvoices } from "../serveices/adminApi";
+import { getInvoices, deleteInvoice } from "../serveices/adminApi";
 
 function Invoice() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -17,6 +22,12 @@ function Invoice() {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    invoiceId: null,
+    invoiceNumber: '',
+    isDeleting: false
+  });
 
   useEffect(() => {
     const fetchInvoices = async () => {
@@ -26,6 +37,7 @@ function Invoice() {
         
         const transformedInvoices = invoiceData.map(invoice => ({
           id: invoice.invoice_Number,
+          originalId: invoice._id, // Store the original MongoDB ID for deletion
           customer: invoice.address?.name || invoice.userId?.name || 'N/A',
           mobile: invoice.address?.phone || invoice.userId?.phone || 'N/A',
           date: new Date(invoice.createdAt).toLocaleDateString('en-US', {
@@ -64,6 +76,55 @@ function Invoice() {
       default:
         return 'bg-gray-100 text-gray-600';
     }
+  };
+
+  const handleDeleteClick = (invoice) => {
+    setDeleteModal({
+      isOpen: true,
+      invoiceId: invoice.originalId,
+      invoiceNumber: invoice.id,
+      isDeleting: false
+    });
+  };
+
+  const handleDeleteConfirm = async () => {
+    setDeleteModal(prev => ({ ...prev, isDeleting: true }));
+    
+    try {
+      await deleteInvoice(deleteModal.invoiceId);
+      
+      // Remove the deleted invoice from the state
+      setInvoices(prevInvoices => 
+        prevInvoices.filter(invoice => invoice.originalId !== deleteModal.invoiceId)
+      );
+      
+      // Close modal
+      setDeleteModal({
+        isOpen: false,
+        invoiceId: null,
+        invoiceNumber: '',
+        isDeleting: false
+      });
+      
+      // You can add a success toast notification here if needed
+      console.log('Invoice deleted successfully');
+      
+    } catch (error) {
+      console.error('Error deleting invoice:', error);
+      setDeleteModal(prev => ({ ...prev, isDeleting: false }));
+      
+      // You can add an error toast notification here
+      alert('Failed to delete invoice. Please try again.');
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModal({
+      isOpen: false,
+      invoiceId: null,
+      invoiceNumber: '',
+      isDeleting: false
+    });
   };
 
   const filteredInvoices = invoices.filter((invoice) => {
@@ -232,11 +293,14 @@ function Invoice() {
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex gap-2">
-                        <button className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors">
+                        {/* <button className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors">
                           View
-                        </button>
-                        <button className="text-red-500 hover:text-red-600 text-sm font-medium transition-colors">
-                          Delete
+                        </button> */}
+                        <button 
+                          className="text-red-500 hover:text-red-600 text-sm font-medium transition-colors"
+                          onClick={() => handleDeleteClick(invoice)}
+                        >
+                          <Trash2Icon></Trash2Icon>
                         </button>
                       </div>
                     </td>
@@ -304,10 +368,13 @@ function Invoice() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <button className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors">
+                  {/* <button className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors">
                     View
-                  </button>
-                  <button className="text-red-500 hover:text-red-600 text-sm font-medium transition-colors">
+                  </button> */}
+                  <button 
+                    className="text-red-500 hover:text-red-600 text-sm font-medium transition-colors"
+                    onClick={() => handleDeleteClick(invoice)}
+                  >
                     Delete
                   </button>
                 </div>
@@ -332,6 +399,66 @@ function Invoice() {
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div className="p-6">
+              <div className="flex items-center mb-4">
+                <div className="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                  <AlertTriangle className="w-5 h-5 text-red-600" />
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Delete Invoice
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    This action cannot be undone.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <p className="text-sm text-gray-700">
+                  Are you sure you want to delete invoice{' '}
+                  <span className="font-semibold text-gray-900">
+                    {deleteModal.invoiceNumber}
+                  </span>
+                  ? This will permanently remove the invoice from your system.
+                </p>
+              </div>
+              
+              <div className="flex justify-end gap-3">
+                <button
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                  onClick={handleDeleteCancel}
+                  disabled={deleteModal.isDeleting}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  onClick={handleDeleteConfirm}
+                  disabled={deleteModal.isDeleting}
+                >
+                  {deleteModal.isDeleting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4" />
+                      Delete
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

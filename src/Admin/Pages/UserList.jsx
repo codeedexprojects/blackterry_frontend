@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, ChevronLeft, ChevronRight } from "lucide-react";
-import AdminLayout from "../Components/AdminLayout";
-import { getUsers } from "../serveices/adminApi";
-
+import { Search, ChevronLeft, ChevronRight, X, AlertTriangle } from "lucide-react";
+import { deleteUser, getUsers, userStatusChange } from "../serveices/adminApi";
 
 function UserList() {
   const navigate = useNavigate();
@@ -14,6 +12,20 @@ function UserList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
+  
+  // Modal states
+  const [statusModal, setStatusModal] = useState({
+    isOpen: false,
+    user: null,
+    newStatus: null,
+    loading: false
+  });
+  
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    user: null,
+    loading: false
+  });
 
   // Fetch users on component mount
   useEffect(() => {
@@ -54,14 +66,83 @@ function UserList() {
     navigate("/admin/user-details", { state: { user } });
   };
 
-  const handleSuspend = (userId) => {
-    // Implement suspend functionality
-    console.log("Suspend user:", userId);
+  const handleSuspend = (user) => {
+    const newStatus = user.status === "true" || user.status === "active" ? "suspended" : "active";
+    setStatusModal({
+      isOpen: true,
+      user: user,
+      newStatus: newStatus,
+      loading: false
+    });
+    setOpenMenuIndex(null);
   };
 
-  const handleDelete = (userId) => {
-    // Implement delete functionality
-    console.log("Delete user:", userId);
+  const handleDelete = (user) => {
+    setDeleteModal({
+      isOpen: true,
+      user: user,
+      loading: false
+    });
+    setOpenMenuIndex(null);
+  };
+
+  const confirmStatusChange = async () => {
+    try {
+      setStatusModal(prev => ({ ...prev, loading: true }));
+      
+      const reqBody = {
+        status: statusModal.newStatus
+      };
+      
+      await userStatusChange(statusModal.user.id, reqBody);
+      
+      // Update local state
+      setUsers(prevUsers => 
+        prevUsers.map(user => 
+          user.id === statusModal.user.id 
+            ? { ...user, status: statusModal.newStatus }
+            : user
+        )
+      );
+      
+      // Close modal
+      setStatusModal({
+        isOpen: false,
+        user: null,
+        newStatus: null,
+        loading: false
+      });
+      
+    } catch (error) {
+      console.error("Error updating user status:", error);
+      setError("Failed to update user status");
+      setStatusModal(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  const confirmDelete = async () => {
+    try {
+      setDeleteModal(prev => ({ ...prev, loading: true }));
+      
+      await deleteUser(deleteModal.user.id);
+      
+      // Update local state
+      setUsers(prevUsers => 
+        prevUsers.filter(user => user.id !== deleteModal.user.id)
+      );
+      
+      // Close modal
+      setDeleteModal({
+        isOpen: false,
+        user: null,
+        loading: false
+      });
+      
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      setError("Failed to delete user");
+      setDeleteModal(prev => ({ ...prev, loading: false }));
+    }
   };
 
   const getDefaultAddress = (addresses) => {
@@ -197,6 +278,8 @@ function UserList() {
                           className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                             user.status === "active" || user.status === "true"
                               ? "bg-green-100 text-green-800"
+                              : user.status === "suspended"
+                              ? "bg-yellow-100 text-yellow-800"
                               : "bg-red-100 text-red-800"
                           }`}
                         >
@@ -216,20 +299,20 @@ function UserList() {
                         </button>
                         {openMenuIndex === index && (
                           <div className="absolute right-6 mt-2 w-32 bg-white border rounded shadow-lg z-10">
-                            <button
+                            {/* <button
                               onClick={() => handleView(user)}
                               className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
                             >
                               View
-                            </button>
+                            </button> */}
                             <button
-                              onClick={() => handleSuspend(user.id)}
+                              onClick={() => handleSuspend(user)}
                               className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
                             >
-                              Suspend
+                              {user.status === "true" || user.status === "active" ? "Suspend" : "Activate"}
                             </button>
                             <button
-                              onClick={() => handleDelete(user.id)}
+                              onClick={() => handleDelete(user)}
                               className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 text-red-600"
                             >
                               Delete
@@ -269,6 +352,8 @@ function UserList() {
                       className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                         user.status === "active" || user.status === "true"
                           ? "bg-green-100 text-green-800"
+                          : user.status === "suspended"
+                          ? "bg-yellow-100 text-yellow-800"
                           : "bg-red-100 text-red-800"
                       }`}
                     >
@@ -319,13 +404,13 @@ function UserList() {
                           View
                         </button>
                         <button
-                          onClick={() => handleSuspend(user.id)}
+                          onClick={() => handleSuspend(user)}
                           className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 text-yellow-600"
                         >
-                          Suspend
+                          {user.status === "true" || user.status === "active" ? "Suspend" : "Activate"}
                         </button>
                         <button
-                          onClick={() => handleDelete(user.id)}
+                          onClick={() => handleDelete(user)}
                           className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 text-red-600"
                         >
                           Delete
@@ -363,6 +448,98 @@ function UserList() {
           </button>
         </div>
       </div>
+
+      {/* Status Change Modal */}
+      {statusModal.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {statusModal.newStatus === "suspended" ? "Suspend User" : "Activate User"}
+              </h3>
+              <button
+                onClick={() => setStatusModal({ isOpen: false, user: null, newStatus: null, loading: false })}
+                className="text-gray-400 hover:text-gray-600"
+                disabled={statusModal.loading}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="mb-6">
+              <p className="text-gray-600">
+                Are you sure you want to {statusModal.newStatus === "suspended" ? "suspend" : "activate"} the user{" "}
+                <span className="font-semibold">{statusModal.user?.name}</span>?
+              </p>
+            </div>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setStatusModal({ isOpen: false, user: null, newStatus: null, loading: false })}
+                className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
+                disabled={statusModal.loading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmStatusChange}
+                className={`px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors ${
+                  statusModal.newStatus === "suspended"
+                    ? "bg-yellow-600 hover:bg-yellow-700"
+                    : "bg-green-600 hover:bg-green-700"
+                }`}
+                disabled={statusModal.loading}
+              >
+                {statusModal.loading ? "Processing..." : statusModal.newStatus === "suspended" ? "Suspend" : "Activate"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Modal */}
+      {deleteModal.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+                Delete User
+              </h3>
+              <button
+                onClick={() => setDeleteModal({ isOpen: false, user: null, loading: false })}
+                className="text-gray-400 hover:text-gray-600"
+                disabled={deleteModal.loading}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="mb-6">
+              <p className="text-gray-600">
+                Are you sure you want to delete the user{" "}
+                <span className="font-semibold">{deleteModal.user?.name}</span>?
+              </p>
+              <p className="text-red-600 text-sm mt-2">
+                This action cannot be undone.
+              </p>
+            </div>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setDeleteModal({ isOpen: false, user: null, loading: false })}
+                className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
+                disabled={deleteModal.loading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+                disabled={deleteModal.loading}
+              >
+                {deleteModal.loading ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

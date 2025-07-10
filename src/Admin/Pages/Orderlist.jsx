@@ -6,10 +6,12 @@ import {
   ChevronLeft,
   ChevronRight,
   RotateCcw,
+  Edit,
+  Trash2,
 } from "lucide-react";
 import "react-datepicker/dist/react-datepicker.css";
 import Datepicker from "react-datepicker";
-import { getOrders } from "../serveices/adminApi";
+import { getOrders, deleteOrder } from "../serveices/adminApi";
 import { UpdateStatusModal } from "../Components/Orders/StatusModal";
 
 function Orderlist() {
@@ -24,6 +26,7 @@ function Orderlist() {
   const [error, setError] = useState(null);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const handleStatusUpdate = (orderId, newStatus) => {
     setOrders(prevOrders =>
@@ -31,6 +34,33 @@ function Orderlist() {
         order._id === orderId ? { ...order, status: newStatus } : order
       )
     );
+  };
+
+  const handleDeleteOrder = async () => {
+    if (!orderToDelete) return;
+
+    setDeleteLoading(true);
+    try {
+      await deleteOrder(orderToDelete._id);
+      
+      // Remove the deleted order from the state
+      setOrders(prevOrders => 
+        prevOrders.filter(order => order._id !== orderToDelete._id)
+      );
+      
+      // Close the modal and reset state
+      setShowDeleteConfirm(false);
+      setOrderToDelete(null);
+      
+      // Optional: Show success message
+      alert("Order deleted successfully!");
+      
+    } catch (error) {
+      console.error("Error deleting order:", error);
+      alert("Failed to delete order. Please try again.");
+    } finally {
+      setDeleteLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -252,7 +282,7 @@ function Orderlist() {
                           setShowStatusModal(true);
                         }}
                       >
-                        Edit
+                        <Edit></Edit>
                       </button>
                       <button
                         className="text-red-500 hover:text-red-600 text-sm font-medium transition-colors"
@@ -261,7 +291,7 @@ function Orderlist() {
                           setShowDeleteConfirm(true);
                         }}
                       >
-                        Delete
+                        <Trash2></Trash2>
                       </button>
                     </td>
                   </tr>
@@ -329,8 +359,14 @@ function Orderlist() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <button className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors">
-                    Edit
+                  <button 
+                    className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
+                    onClick={() => {
+                      setSelectedOrder(order);
+                      setShowStatusModal(true);
+                    }}
+                  >
+                    <Edit></Edit>
                   </button>
                   <button
                     className="text-red-500 hover:text-red-600 text-sm font-medium transition-colors"
@@ -356,38 +392,42 @@ function Orderlist() {
       {showDeleteConfirm && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm">
-            <h2 className="text-xl font-light text-black">
+            <h2 className="text-xl font-light text-black mb-4">
               Do you really want to delete this order?
             </h2>
-            <div className="flex justify-end gap-4 mt-4">
+            <p className="text-sm text-gray-600 mb-6">
+              Order ID: {orderToDelete?.orderId || 'N/A'}
+            </p>
+            <div className="flex justify-end gap-4">
               <button
-                className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800"
-                onClick={() => setShowDeleteConfirm(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setOrderToDelete(null);
+                }}
+                disabled={deleteLoading}
               >
                 Cancel
               </button>
               <button
-                className="px-4 py-2 bg-red-500 text-white text-sm font-medium rounded hover:bg-red-600"
-                onClick={() => {
-                  // Handle deletion logic here
-                  console.log("Deleted order:", orderToDelete);
-                  setShowDeleteConfirm(false);
-                  setOrderToDelete(null);
-                }}
+                className="px-4 py-2 bg-red-500 text-white text-sm font-medium rounded hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleDeleteOrder}
+                disabled={deleteLoading}
               >
-                Delete
+                {deleteLoading ? 'Deleting...' : 'Delete'}
               </button>
             </div>
           </div>
         </div>
       )}
+      
       {showStatusModal && (
-  <UpdateStatusModal
-    order={selectedOrder}
-    onClose={() => setShowStatusModal(false)}
-    onStatusUpdate={handleStatusUpdate}
-  />
-)}
+        <UpdateStatusModal
+          order={selectedOrder}
+          onClose={() => setShowStatusModal(false)}
+          onStatusUpdate={handleStatusUpdate}
+        />
+      )}
 
       {/* Pagination */}
       <div className="flex flex-col sm:flex-row justify-between items-center mt-6 gap-4">

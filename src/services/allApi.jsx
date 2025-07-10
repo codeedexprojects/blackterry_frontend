@@ -253,7 +253,22 @@ export const getCheckout = async (checkoutId) => {
     }
 };
 
-export const placeOrder = async (reqBody) => {
+export const initiateOrder = async (reqBody) => {
+    try {
+        const token = localStorage.getItem('userToken');
+        const response = await axios.post(`${BASE_URL}${API_ENDPOINTS.ORDER}/create`, reqBody, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                 'Content-Type': 'application/json'
+            }
+        });
+        return response;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export const confirmOrder = async (reqBody) => {
     try {
         const token = localStorage.getItem('userToken');
         const response = await axios.post(`${BASE_URL}${API_ENDPOINTS.ORDER}/confirm`, reqBody, {
@@ -266,6 +281,8 @@ export const placeOrder = async (reqBody) => {
         console.log(error);
     }
 };
+
+
 
 export const buyNow = async (reqBody) => {
     try {
@@ -348,4 +365,17 @@ export const returnOrder = async (orderId, reqBody) => {
         console.error('Return order error:', error);
         throw error; // Re-throw to handle in component
     }
+};
+
+export const searchProducts = async (query) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/search`, {
+      params: {
+        query: query,
+      },
+    });
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
 };

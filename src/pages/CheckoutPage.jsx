@@ -5,7 +5,7 @@ import tshirt2 from "/src/assets/tshirt7.jpg";
 import { useLocation, useNavigate } from "react-router-dom";
 import Header from "/src/Components/Header";
 import Footer from "/src/Components/Footer";
-import { getAddress, getCheckout, placeOrder } from "../services/allApi";
+import { getAddress, getCheckout, initiateOrder, confirmOrder } from "../services/allApi";
 
 function CheckoutPage() {
   const navigate = useNavigate();
@@ -18,6 +18,7 @@ function CheckoutPage() {
   const [addressLoading, setAddressLoading] = useState(true);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [email, setEmail] = useState("");
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -55,44 +56,145 @@ function CheckoutPage() {
     fetchData();
   }, [checkoutId]);
 
+  // Load Razorpay script
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+    
+    return () => {
+      // Cleanup script on unmount
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
+  }, []);
+
+  const handleRazorpayPayment = (orderResponse) => {
+    if (!window.Razorpay) {
+      alert('Razorpay SDK failed to load. Please check your internet connection.');
+      return;
+    }
+
+    const options = {
+      key: "rzp_test_g5f2PooYv6Hsf3",
+      amount: orderResponse.amount,
+      currency: orderResponse.currency,
+      name: "BLACK TERRY",
+      description: "Fashion E-commerce Platform",
+      image: "/logo.png", 
+      order_id: orderResponse.orderId,
+      handler: async function (response) {
+        console.log("Razorpay Payment Success:", response);
+        
+        try {
+          setPaymentProcessing(true);
+          
+          const confirmPayload = {
+            userId: localStorage.getItem('userId'),
+            addressId: selectedAddress._id,
+            checkoutId: checkoutId,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+          };
+
+          console.log("Confirming order with payload:", confirmPayload);
+
+          const confirmResponse = await confirmOrder(confirmPayload);
+          
+          if (confirmResponse && confirmResponse.data) {
+            // Payment successful, navigate to success page
+            navigate("/order-confirmation", {
+              state: {
+                orderId: confirmResponse.data._id,
+                orderDetails: confirmResponse.data,
+                paymentId: response.razorpay_payment_id
+              }
+            });
+          } else {
+            throw new Error("Failed to confirm order");
+          }
+        } catch (error) {
+          console.error("Order confirmation failed:", error);
+          alert("Payment was successful, but order confirmation failed. Please contact support with payment ID: " + response.razorpay_payment_id);
+        } finally {
+          setPaymentProcessing(false);
+        }
+      },
+      prefill: {
+        name: `${selectedAddress?.firstName || ''} ${selectedAddress?.lastName || ''}`,
+        email: email || orderResponse.user?.email || '',
+        contact: selectedAddress?.number || orderResponse.user?.contact || '',
+      },
+      notes: {
+        address: selectedAddress?.address || '',
+        checkoutId: checkoutId
+      },
+      theme: {
+        color: "#50311D",
+      },
+      modal: {
+        ondismiss: function() {
+          setPaymentProcessing(false);
+          console.log('Payment modal closed');
+        }
+      }
+    };
+
+    const razorpay = new window.Razorpay(options);
+    
+    razorpay.on('payment.failed', function (response) {
+      console.error('Payment failed:', response.error);
+      alert('Payment failed: ' + response.error.description);
+      setPaymentProcessing(false);
+    });
+
+    razorpay.open();
+  };
+
   const handlePay = async () => {
     if (!selectedAddress) {
       alert("Please select a delivery address");
       return;
     }
-    if (!email) {
-      alert("Please enter your email");
+    
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      alert("Please log in to place an order");
       return;
     }
 
     try {
-      const userId = localStorage.getItem('userId');
-      if (!userId) {
-        alert("Please log in to place an order");
-        return;
-      }
+      setPaymentProcessing(true);
 
-      const reqBody = {
+      const initiatePayload = {
         userId: userId,
         addressId: selectedAddress._id,
         checkoutId: checkoutId
       };
 
-      const response = await placeOrder(reqBody);
+      console.log("Initiating order with payload:", initiatePayload);
 
+      const response = await initiateOrder(initiatePayload);
+      
       if (response && response.data) {
-        navigate("/order-confirmation", {
-          state: {
-            orderId: response.data._id,
-            orderDetails: response.data
-          }
-        });
+        console.log("Order initiated successfully:", response.data);
+        
+        // Check if response contains required Razorpay data
+        if (response.data.orderId && response.data.amount) {
+          handleRazorpayPayment(response.data);
+        } else {
+          throw new Error("Invalid response from order initiation");
+        }
       } else {
-        throw new Error("Failed to place order");
+        throw new Error("Failed to initiate order");
       }
     } catch (error) {
-      console.error("Error placing order:", error);
-      alert("Failed to place order. Please try again.");
+      console.error("Error initiating order:", error);
+      alert("Failed to initiate payment. Please try again.");
+      setPaymentProcessing(false);
     }
   };
 
@@ -112,7 +214,7 @@ function CheckoutPage() {
     const shipping = 0;
     const taxes = 0;
     const discount = checkoutData.discountedPrice || 0;
-    const total = subtotal + shipping + taxes; // Don't subtract discount from total
+    const total = subtotal + shipping + taxes;
     return { subtotal, shipping, taxes, discount, total };
   };
 
@@ -194,34 +296,7 @@ function CheckoutPage() {
               </button>
             </div>
 
-            {/* Contact Section */}
-            {/* <div className="mb-4">
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <h5 className="m-0">Contact</h5>
-                <span className="text-primary small">Log in</span>
-              </div>
-              <div className="mb-3">
-                <input
-                  type="email"
-                  className="form-control form-control-lg"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div className="form-check">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  id="emailMe"
-                />
-                <label className="form-check-label small" htmlFor="emailMe">
-                  Email me with news and offers
-                </label>
-              </div>
-            </div> */}
-
-            {/* Delivery Section - Redesigned */}
+            {/* Delivery Section */}
             <div className="mb-4">
               <div className="d-flex justify-content-between align-items-center mb-4">
                 <h5 className="m-0 d-flex align-items-center">
@@ -410,6 +485,12 @@ function CheckoutPage() {
                       className="me-1"
                       style={{ width: "30px", height: "20px" }}
                     />
+                    <img
+                      src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/UPI-Logo-vector.svg/1280px-UPI-Logo-vector.svg.png"
+                      alt="UPI"
+                      className="me-1"
+                      style={{ width: "30px", height: "20px" }}
+                    />
                   </div>
                 </div>
               </div>
@@ -421,10 +502,10 @@ function CheckoutPage() {
                   </div>
                 </div>
                 <p className="small mb-1">
-                  After placing your order, you will be redirected to
+                  After clicking "Pay Now", you will be redirected to
                 </p>
                 <p className="small mb-1">
-                  Payment Gateway (UPI, Cards & NetBanking) to complete
+                  Razorpay Payment Gateway (UPI, Cards & NetBanking) to complete
                 </p>
                 <p className="small">your purchase securely</p>
               </div>
@@ -435,13 +516,24 @@ function CheckoutPage() {
               <button
                 className="btn btn-dark w-100 py-3 fw-bold"
                 onClick={handlePay}
-                style={{ backgroundColor: "#50311D" }}
+                disabled={paymentProcessing}
+                style={{ 
+                  backgroundColor: paymentProcessing ? "#6c757d" : "#50311D",
+                  opacity: paymentProcessing ? 0.7 : 1
+                }}
               >
-                Pay now
+                {paymentProcessing ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Processing...
+                  </>
+                ) : (
+                  "Pay Now"
+                )}
               </button>
               <div className="d-flex justify-content-center align-items-center mt-2 text-muted small">
                 <Lock size={14} className="me-1" />
-                <span>Secure Payment</span>
+                <span>Secure Payment with Razorpay</span>
               </div>
             </div>
           </div>
@@ -475,6 +567,7 @@ function CheckoutPage() {
                   </div>
                 </div>
               ))}
+              
               <div className="border-top pt-3 mb-2">
                 <div className="d-flex justify-content-between mb-2">
                   <span>Subtotal</span>
@@ -495,6 +588,7 @@ function CheckoutPage() {
                   <span>₹{taxes.toFixed(2)}</span>
                 </div>
               </div>
+              
               <div className="border-top pt-3">
                 <div className="d-flex justify-content-between">
                   <h5>Total</h5>

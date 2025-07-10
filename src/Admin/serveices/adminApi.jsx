@@ -216,14 +216,14 @@ export const updateOrderStatus = async (reqBody,id) => {
 export const deleteOrder = async (id) => {
   try {
     const token = localStorage.getItem('adminToken');
-    const response = await axios.delete(`${BASE_URL}${API_ENDPOINTS.ORDER}/update/${id}`, reqBody,{
+    const response = await axios.delete(`${BASE_URL}${API_ENDPOINTS.ORDER}/delete/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
     });
     return response;
   } catch (error) {
-    console.log(error);
+    console.error('Error deleting order:', error);
     throw error;
   }
 }
@@ -269,6 +269,51 @@ export const getRecentOrders = async () => {
     return response;
   } catch (error) {
     console.log(error);
+    throw error;
+  }
+}
+
+export const userStatusChange = async (id, reqBody) => {
+  try {
+    const token = localStorage.getItem('adminToken');
+    const response = await axios.patch(`${BASE_URL}${API_ENDPOINTS.USERS}/${id}`, reqBody,{
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    return response;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+export const deleteUser = async (id, reqBody) => {
+  try {
+    const token = localStorage.getItem('adminToken');
+    const response = await axios.delete(`${BASE_URL}${API_ENDPOINTS.USERS}/${id}`, reqBody,{
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    return response;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+export const deleteInvoice = async (id) => {
+  try {
+    const token = localStorage.getItem('adminToken');
+    const response = await axios.delete(`${BASE_URL}${API_ENDPOINTS.INVOICE}/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    return response;
+  } catch (error) {
+    console.error('Error deleting order:', error);
     throw error;
   }
 }

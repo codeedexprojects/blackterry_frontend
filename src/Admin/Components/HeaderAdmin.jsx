@@ -1,10 +1,17 @@
 import React, { useState } from 'react';
 import { Search, Bell, ChevronDown, Menu, Globe } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 function HeaderAdmin({ onMenuClick, isMobile }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isLanguageOpen, setIsLanguageOpen] = useState(false);
+  const navigate=useNavigate()
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+     localStorage.removeItem('adminData');
+    navigate('/admin/login');
+  }
 
   return (
     <header className="bg-white border-b border-gray-200 px-4 md:px-6 py-4 flex-shrink-0">
@@ -99,10 +106,10 @@ function HeaderAdmin({ onMenuClick, isMobile }) {
               className="flex items-center gap-2 md:gap-3 px-2 md:px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors"
             >
               <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-semibold">MR</span>
+                <span className="text-white text-sm font-semibold">BT</span>
               </div>
               <div className="text-left hidden lg:block">
-                <div className="text-sm font-semibold text-gray-900">Moni Roy</div>
+                <div className="text-sm font-semibold text-gray-900">BLACK TERRY</div>
                 <div className="text-xs text-gray-500">Admin</div>
               </div>
               <ChevronDown className="w-3 h-3 md:w-4 md:h-4 text-gray-400" />
@@ -116,20 +123,14 @@ function HeaderAdmin({ onMenuClick, isMobile }) {
                 ></div>
                 <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 min-w-[180px]">
                   <div className="px-4 py-3 border-b border-gray-100">
-                    <div className="text-sm font-semibold text-gray-900">Moni Roy</div>
+                    <div className="text-sm font-semibold text-gray-900">BLACK TERRY</div>
                     <div className="text-xs text-gray-500">Admin</div>
                   </div>
                   <button 
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                    onClick={() => setIsProfileOpen(false)}
-                  >
-                    Sign In
-                  </button>
-                  <button 
                     className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50 transition-colors"
-                    onClick={() => setIsProfileOpen(false)}
+                    onClick={handleLogout}
                   >
-                    Sign Out
+                    Logout
                   </button>
                 </div>
               </>
