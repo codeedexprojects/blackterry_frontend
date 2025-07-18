@@ -14,6 +14,10 @@ const ProductDetails = () => {
   const [error, setError] = useState(null);
   const [buyNowLoading, setBuyNowLoading] = useState(false);
 
+  const handleViewDetails = ()=>{
+    navigate(`/details/${currentProduct._id}`);
+  }
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -287,8 +291,8 @@ const ProductDetails = () => {
 
         {/* Footer actions */}
         <div className="flex justify-between text-sm text-gray-500 mt-4">
-          <span>Share</span>
-          <span className="flex items-center gap-1">
+          
+          <span onClick={handleViewDetails}  className="cursor-pointer flex items-center gap-1">
             View full details <span className="text-xl">{">"}</span>
           </span>
         </div>

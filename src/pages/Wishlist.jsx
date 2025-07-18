@@ -74,7 +74,6 @@ function Wishlist() {
 
       const userId = getUserId();
 
-      // Send as JSON object instead of FormData
       const reqBody = {
         userId: userId,
         productId: productId
@@ -108,7 +107,6 @@ function Wishlist() {
         return;
       }
 
-      // Get default color and size if available
       let selectedColor = null;
       let selectedSize = null;
       
@@ -119,18 +117,18 @@ function Wishlist() {
         }
       }
 
-      // If no color/size data, use defaults
+      
       if (!selectedColor) {
         selectedColor = "Default";
       }
       if (!selectedSize) {
-        selectedSize = "M"; // or whatever default size you want
+        selectedSize = "M"; 
       }
 
       const reqBody = {
         userId: userId,
-        productId: item.productId, // Use item.productId instead of currentProduct._id
-        quantity: 1, // Default quantity
+        productId: item.productId, 
+        quantity: 1,
         color: selectedColor,
         size: selectedSize
       };
