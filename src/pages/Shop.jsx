@@ -6,6 +6,7 @@ import adds from "/src/assets/ads.png";
 import ShopFilterBar from "../Components/Shop/Filter";
 import ShopProductGrid from "../Components/Shop/ProductGrid";
 import { getProducts, searchProducts } from "../services/allApi";
+import ProductCarousel from "../Components/Shop/FeatureProduct";
 
 function Shop() {
   const navigate = useNavigate();
@@ -279,13 +280,7 @@ function Shop() {
         )}
       </div>
 
-      <div className="w-full flex justify-center items-center">
-        <img
-          src={adds}
-          alt="Ad Banner"
-          className="w-full h-auto object-contain"
-        />
-      </div>
+      <ProductCarousel></ProductCarousel>
 
       <Footer />
     </div>

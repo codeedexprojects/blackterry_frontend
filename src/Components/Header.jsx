@@ -7,11 +7,13 @@ import {
 } from 'react-icons/fa';
 import { GrFavorite } from 'react-icons/gr';
 import { IoBagHandleOutline, IoSearchSharp } from 'react-icons/io5';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { getTextSlider, getCart } from '../services/allApi';
+import image from '../assets/logoname.png';
 
 const Header = ({ cartUpdated }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [textSliders, setTextSliders] = useState([]);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -20,7 +22,10 @@ const Header = ({ cartUpdated }) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Fetch text slider data
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
+
   useEffect(() => {
     const fetchTextSliders = async () => {
       try {
@@ -40,7 +45,6 @@ const Header = ({ cartUpdated }) => {
     fetchTextSliders();
   }, []);
 
-  // Fetch cart data
   const fetchCartData = async () => {
     const userId = localStorage.getItem('userId');
     const userToken = localStorage.getItem('userToken');
@@ -71,27 +75,26 @@ const Header = ({ cartUpdated }) => {
     fetchCartData();
   }, []);
 
-  // Enhanced auto-slide functionality with pause on hover
   useEffect(() => {
     if (textSliders.length <= 1 || isHovered) return;
 
     const interval = setInterval(() => {
-      setCurrentSlideIndex((prevIndex) => 
+      setCurrentSlideIndex((prevIndex) =>
         (prevIndex + 1) % textSliders.length
       );
-    }, 3000); // Reduced to 3s for better visibility
+    }, 3000);
 
     return () => clearInterval(interval);
   }, [textSliders.length, isHovered]);
 
   const goToPrevious = () => {
-    setCurrentSlideIndex((prevIndex) => 
+    setCurrentSlideIndex((prevIndex) =>
       prevIndex === 0 ? textSliders.length - 1 : prevIndex - 1
     );
   };
 
   const goToNext = () => {
-    setCurrentSlideIndex((prevIndex) => 
+    setCurrentSlideIndex((prevIndex) =>
       (prevIndex + 1) % textSliders.length
     );
   };
@@ -102,7 +105,6 @@ const Header = ({ cartUpdated }) => {
     return textSliders[currentSlideIndex]?.title || 'BLACK TERRY';
   };
 
-  // Handle search functionality
   const handleSearchClick = () => {
     setIsSearchOpen(true);
   };
@@ -115,7 +117,6 @@ const Header = ({ cartUpdated }) => {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      // Navigate to shop page with search query
       navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
       setIsSearchOpen(false);
       setSearchQuery('');
@@ -130,27 +131,25 @@ const Header = ({ cartUpdated }) => {
 
   return (
     <header className="w-full">
-      {/* Enhanced Top Slider Section */}
-      <div 
+      {/* Top Slider Section */}
+      <div
         className="flex items-center justify-between bg-[#D9CEBF] px-4 py-3 text-sm text-[#5c4432] relative overflow-hidden"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        {/* Navigation Arrows */}
-        <button 
+        <button
           onClick={goToPrevious}
           className="z-10 p-1 rounded-full hover:bg-[#5c4432]/10 transition-colors"
           aria-label="Previous slide"
         >
           <FaChevronLeft className="w-4 h-4" />
         </button>
-        
-        {/* Slider Content */}
+
         <div className="flex-1 mx-4 overflow-hidden">
           <div className="relative w-full h-6">
-            <div 
+            <div
               className="absolute top-0 left-0 w-full h-full flex transition-transform duration-500 ease-in-out"
-              style={{ 
+              style={{
                 transform: `translateX(-${currentSlideIndex * 100}%)`,
               }}
             >
@@ -176,64 +175,85 @@ const Header = ({ cartUpdated }) => {
           </div>
         </div>
 
-        {/* Navigation Arrows */}
-        <button 
+        <button
           onClick={goToNext}
           className="z-10 p-1 rounded-full hover:bg-[#5c4432]/10 transition-colors"
           aria-label="Next slide"
         >
           <FaChevronRight className="w-4 h-4" />
         </button>
-
-        {/* Slide Indicators */}
-        {textSliders.length > 1 && (
-          <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex gap-1.5">
-            {textSliders.map((_, index) => (
-              <button
-                key={index}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  index === currentSlideIndex 
-                    ? 'bg-[#5c4432] w-3' 
-                    : 'bg-[#5c4432]/30'
-                }`}
-                onClick={() => setCurrentSlideIndex(index)}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Main Header */}
       <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 bg-white relative">
-        {/* Left menu */}
+        {/* Navigation Links */}
         <nav className="flex gap-6 text-sm mb-2 sm:mb-0">
-          <a href="/" className="text-black hover:text-[#D9CEBF] transition-colors">NEW</a>
-          <a href="/shop" className="text-black hover:text-[#D9CEBF] transition-colors">SHOP</a>
-          <a href="/about" className="text-black hover:text-[#D9CEBF] transition-colors">ABOUT</a>
-          <a href="/contact" className="text-black hover:text-[#D9CEBF] transition-colors">CONTACT</a>
+          <Link 
+            to="/" 
+            className={`no-underline text-black hover:text-[#806248] transition-colors ${isActive('/') ? 'text-[#806248] font-medium' : ''}`}
+            style={{textDecoration: 'none'}}
+          >
+            NEW
+          </Link>
+          <Link 
+            to="/shop" 
+             style={{textDecoration: 'none'}}
+            className={`no-underline text-black hover:text-[#806248] transition-colors ${isActive('/shop') ? 'text-[#806248] font-medium' : ''}`}
+          >
+            SHOP
+          </Link>
+          <Link 
+            to="/about" 
+             style={{textDecoration: 'none'}}
+            className={`no-underline text-black hover:text-[#806248] transition-colors ${isActive('/about') ? 'text-[#806248] font-medium' : ''}`}
+          >
+            ABOUT
+          </Link>
+          <Link 
+            to="/contact" 
+             style={{textDecoration: 'none'}}
+            className={`no-underline text-black hover:text-[#806248] transition-colors ${isActive('/contact') ? 'text-[#806248] font-medium' : ''}`}
+          >
+            CONTACT
+          </Link>
         </nav>
 
         {/* Logo */}
-        <h1 className="text-2xl font-bold tracking-wide text-black">BLACK TERRY</h1>
+        <Link to="/" className="no-underline">
+          <img
+            src={image}
+            alt="BLACK TERRY Logo"
+            className="h-10 w-auto object-contain"
+          />
+        </Link>
 
+        {/* Icons */}
         <div className="flex gap-4 mt-2 sm:mt-0 text-lg">
-          <button 
+          <button
             onClick={handleSearchClick}
             className="text-black hover:text-[#D9CEBF] transition-colors"
           >
             <IoSearchSharp className="cursor-pointer" />
           </button>
-          <Link to="/wishlist" className="text-black hover:text-[#D9CEBF] transition-colors">
+          <Link 
+            to="/wishlist" 
+            className="no-underline text-black hover:text-[#D9CEBF] transition-colors"
+          >
             <GrFavorite className="cursor-pointer" />
           </Link>
-          <Link to="/cart" className="text-black hover:text-[#D9CEBF] transition-colors relative">
+          <Link 
+            to="/cart" 
+            className="no-underline text-black hover:text-[#D9CEBF] transition-colors relative"
+          >
             <IoBagHandleOutline className="cursor-pointer" />
             <span className={`absolute -top-2 -right-2 bg-[#5c4432] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center ${cartCount === 0 ? 'opacity-70' : ''}`}>
               {cartCount}
             </span>
           </Link>
-          <Link to="/profile" className="text-black hover:text-[#D9CEBF] transition-colors">
+          <Link 
+            to="/profile" 
+            className="no-underline text-black hover:text-[#D9CEBF] transition-colors"
+          >
             <FaRegUser className="cursor-pointer" />
           </Link>
         </div>
@@ -253,7 +273,7 @@ const Header = ({ cartUpdated }) => {
                   <FaTimes className="w-5 h-5" />
                 </button>
               </div>
-              
+
               <form onSubmit={handleSearchSubmit} className="relative">
                 <input
                   type="text"
@@ -271,7 +291,7 @@ const Header = ({ cartUpdated }) => {
                   <IoSearchSharp className="w-5 h-5" />
                 </button>
               </form>
-              
+
               <div className="mt-4 text-sm text-gray-600">
                 <p>Press Enter or click the search icon to find products</p>
               </div>

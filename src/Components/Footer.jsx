@@ -3,7 +3,7 @@ import footericon from "/src/assets/footerlogo.png";
 
 function Footer() {
   return (
-    <footer className="bg-white py-4 border-top mt-5">
+    <footer className="bg-white py-4  mt-5">
       <div className="container">
         <div className="row text-center text-md-start align-items-start">
           {/* Logo Section */}
@@ -13,8 +13,8 @@ function Footer() {
                 src={footericon}
                 alt="Black Terry"
                 style={{
-                  width: "120px",
-                  maxHeight: "60px",
+                  width: "180px",
+                  maxHeight: "80px",
                   objectFit: "contain",
                 }}
               />
@@ -58,7 +58,7 @@ function Footer() {
             fontSize: "0.8rem",
             paddingTop: "1rem",
             color: "#666",
-            border: "1px solid #eee",
+           
           }}
         >
           <p>
