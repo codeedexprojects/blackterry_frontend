@@ -186,7 +186,6 @@ const Header = ({ cartUpdated }) => {
 
       {/* Main Header */}
       <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 bg-white relative">
-        {/* Navigation Links */}
         <nav className="flex gap-6 text-sm mb-2 sm:mb-0">
           <Link 
             to="/" 
