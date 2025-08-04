@@ -1,4 +1,4 @@
-export const BASE_URL="https://blackterry-back-end.onrender.com"
+export const BASE_URL="https://blackterry.in/api"
 
 export const API_ENDPOINTS = {
     USER_AUTH: '/user-auth',
