@@ -101,36 +101,45 @@ const ProductViewModal = ({ productId, isOpen, onClose }) => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Left Column - Images */}
               <div className="space-y-4">
-                <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                  <img
-                    src={product.images.length > 0 ? getImageUrl(product.images[selectedImage]) : "/src/assets/product.jpg"}
-                    alt={product.title}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.src = "/src/assets/product.jpg";
-                    }}
-                  />
-                </div>
-                {product.images.length > 1 && (
-                  <div className="flex gap-2 overflow-x-auto pb-2">
-                    {product.images.map((image, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setSelectedImage(index)}
-                        className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${
-                          selectedImage === index ? 'border-blue-600' : 'border-gray-200'
-                        }`}
-                      >
-                        <img
-                          src={getImageUrl(image)}
-                          alt={`${product.title} ${index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+  <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+    <img
+      src={
+        product.images?.length > 0
+          ? `https://blackterry.in/uploads/${product.images[selectedImage]}`
+          : "/src/assets/product.jpg"
+      }
+      alt={product.title}
+      className="w-full h-full object-cover"
+      onError={(e) => {
+        e.target.src = "/src/assets/product.jpg";
+      }}
+    />
+  </div>
+
+  {product.images?.length > 1 && (
+    <div className="flex gap-2 overflow-x-auto pb-2">
+      {product.images.map((image, index) => (
+        <button
+          key={index}
+          onClick={() => setSelectedImage(index)}
+          className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${
+            selectedImage === index ? "border-blue-600" : "border-gray-200"
+          }`}
+        >
+          <img
+            src={`https://blackterry.in/uploads/${image}`}
+            alt={`${product.title} ${index + 1}`}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.target.src = "/src/assets/product.jpg";
+            }}
+          />
+        </button>
+      ))}
+    </div>
+  )}
+</div>
+
 
               {/* Right Column - Product Details */}
               <div className="space-y-6">

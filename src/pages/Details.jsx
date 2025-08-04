@@ -11,7 +11,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import RecommendedProducts from "../Components/ProductDetails/RecomendedProducts";
 
 function Details() {
-  const { id } = useParams(); 
+  const { id } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -27,6 +27,8 @@ function Details() {
   const [selectedColor, setSelectedColor] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
   const [mainImage, setMainImage] = useState("");
+
+  const IMG_BASE_URL = "https://blackterry.in/uploads";
 
   const [accordionState, setAccordionState] = useState({
     specifications: false,
@@ -80,7 +82,7 @@ function Details() {
       }
 
       const response = await getWishlist(userId);
-      
+
       if (response?.data?.items) {
         const isProductInWishlist = response.data.items.some(
           item => item.productId._id === id
@@ -97,9 +99,9 @@ function Details() {
 
   const handleAddToWishlist = async () => {
     if (wishlistLoading || checkingWishlist) return;
-    
+
     setWishlistLoading(true);
-    
+
     try {
       const userId = localStorage.getItem("userId");
       if (!userId) {
@@ -113,16 +115,16 @@ function Details() {
       };
 
       const response = await addToWishlist(reqBody);
-      
+
       if (response.data) {
         // Toggle wishlist status
         setIsInWishlist(!isInWishlist);
-        
+
         // Show appropriate message based on action
-        const message = isInWishlist 
+        const message = isInWishlist
           ? "Removed from wishlist successfully"
           : "Added to wishlist successfully";
-          
+
         toast.success(response.data.message || message);
       }
     } catch (error) {
@@ -177,7 +179,7 @@ function Details() {
 
   const handleSizeChange = (size) => {
     setSelectedSize(size);
-    setQuantity(1); 
+    setQuantity(1);
   };
 
   const handleAddToCart = async () => {
@@ -220,7 +222,7 @@ function Details() {
   const handleBuyNow = async () => {
     try {
       setBuyNowLoading(true);
-      
+
       const userId = localStorage.getItem("userId");
       if (!userId) {
         toast.info("Please login to proceed with purchase");
@@ -249,7 +251,7 @@ function Details() {
 
       if (response && response.status === 201) {
         const checkoutId = response.data.checkoutId;
-        
+
         // Navigate to checkout page with checkoutId
         navigate("/checkout", {
           state: {
@@ -333,7 +335,7 @@ function Details() {
                     onClick={() => setMainImage(img)}
                   >
                     <img
-                      src={img}
+                      src={`${IMG_BASE_URL}/${img}`}
                       alt={`Product view ${idx + 1}`}
                       className="img-fluid w-100 h-100"
                       style={{ objectFit: "cover" }}
@@ -341,7 +343,10 @@ function Details() {
                   </div>
                 ))
               ) : (
-                <div className="border rounded d-flex align-items-center justify-content-center" style={{ aspectRatio: "1/1", minHeight: "80px" }}>
+                <div
+                  className="border rounded d-flex align-items-center justify-content-center"
+                  style={{ aspectRatio: "1/1", minHeight: "80px" }}
+                >
                   <span className="text-muted small">No Image</span>
                 </div>
               )}
@@ -354,18 +359,22 @@ function Details() {
               <div className="border rounded overflow-hidden">
                 {mainImage || (product.images && product.images.length > 0) ? (
                   <img
-                    src={mainImage || product.images[0]}
+                    src={`${IMG_BASE_URL}/${mainImage || product.images[0]}`}
                     alt={product.title}
                     className="img-fluid w-100"
                   />
                 ) : (
-                  <div className="d-flex align-items-center justify-content-center bg-light" style={{ minHeight: "400px" }}>
+                  <div
+                    className="d-flex align-items-center justify-content-center bg-light"
+                    style={{ minHeight: "400px" }}
+                  >
                     <span className="text-muted">No Image Available</span>
                   </div>
                 )}
               </div>
             </div>
           </div>
+
 
           {/* Right side - Product Details */}
           <div className="col-md-6">
@@ -405,8 +414,8 @@ function Details() {
                     <div
                       key={colorData.color}
                       className={`position-relative ${selectedColor === colorData.color
-                          ? "border border-3 border-dark rounded p-2"
-                          : "border rounded p-2"
+                        ? "border border-3 border-dark rounded p-2"
+                        : "border rounded p-2"
                         }`}
                       style={{ cursor: "pointer" }}
                       onClick={() => handleColorChange(colorData.color)}
@@ -430,8 +439,8 @@ function Details() {
                     <button
                       key={sizeData.size}
                       className={`btn ${selectedSize === sizeData.size
-                          ? "btn-dark"
-                          : "btn-outline-secondary"
+                        ? "btn-dark"
+                        : "btn-outline-secondary"
                         } d-flex justify-content-center align-items-center`}
                       style={{
                         width: "50px",
@@ -494,7 +503,7 @@ function Details() {
                     <FaShoppingCart />
                     {currentStock > 0 ? 'Add to cart' : 'Out of stock'}
                   </button>
-                  <button 
+                  <button
                     className="btn btn-outline-dark py-3 px-3 d-flex align-items-center justify-content-center"
                     onClick={handleAddToWishlist}
                     disabled={wishlistLoading || checkingWishlist}
@@ -502,8 +511,8 @@ function Details() {
                       checkingWishlist
                         ? "Checking wishlist..."
                         : isInWishlist
-                        ? "Remove from wishlist"
-                        : "Add to wishlist"
+                          ? "Remove from wishlist"
+                          : "Add to wishlist"
                     }
                   >
                     {wishlistLoading ? (

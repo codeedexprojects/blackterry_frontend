@@ -43,61 +43,14 @@ function HeaderAdmin({ onMenuClick, isMobile }) {
         {/* Right Side Items */}
         <div className="flex items-center gap-2 md:gap-4">
           {/* Notification Bell */}
-          <div className="relative">
+          {/* <div className="relative">
             <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors">
               <Bell className="w-5 h-5" />
             </button>
             <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
-          </div>
+          </div> */}
 
-          {/* Language Selector */}
-          <div className="relative">
-            <button
-              onClick={() => setIsLanguageOpen(!isLanguageOpen)}
-              className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
-            >
-              <div className="md:hidden">
-                <Globe className="w-5 h-5" />
-              </div>
-              <div className="hidden md:flex items-center gap-2">
-                <div className="w-5 h-3 bg-gradient-to-r from-blue-500 via-white to-red-500 rounded-sm border border-gray-200"></div>
-                <span className="text-sm font-medium">EN</span>
-              </div>
-              <ChevronDown className="w-3 h-3 md:w-4 md:h-4" />
-            </button>
-
-            {isLanguageOpen && (
-              <>
-                <div 
-                  className="fixed inset-0 z-10" 
-                  onClick={() => setIsLanguageOpen(false)}
-                ></div>
-                <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 min-w-[140px]">
-                  <button 
-                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
-                    onClick={() => setIsLanguageOpen(false)}
-                  >
-                    <div className="w-4 h-3 bg-gradient-to-r from-blue-500 via-white to-red-500 rounded-sm border border-gray-200"></div>
-                    English
-                  </button>
-                  <button 
-                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
-                    onClick={() => setIsLanguageOpen(false)}
-                  >
-                    <div className="w-4 h-3 bg-gradient-to-r from-green-500 via-white to-red-500 rounded-sm border border-gray-200"></div>
-                    Hindi
-                  </button>
-                  <button 
-                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
-                    onClick={() => setIsLanguageOpen(false)}
-                  >
-                    <div className="w-4 h-3 bg-gradient-to-r from-orange-500 via-white to-green-500 rounded-sm border border-gray-200"></div>
-                    Spanish
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
+          
 
           {/* Profile Dropdown */}
           <div className="relative">

@@ -17,7 +17,7 @@ function Product() {
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
-  
+
   // Search and Filter states
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -27,12 +27,12 @@ function Product() {
     sortBy: "newest", // newest, oldest, price-low, price-high, name-asc, name-desc
     hasDiscount: "all" // all, with-discount, without-discount
   });
-  
+
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [paginatedProducts, setPaginatedProducts] = useState([]);
-  
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -72,7 +72,7 @@ function Product() {
 
     // Apply search filter
     if (searchTerm.trim()) {
-      filtered = filtered.filter(product => 
+      filtered = filtered.filter(product =>
         product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.product_Code.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -173,7 +173,7 @@ function Product() {
   const getPageNumbers = () => {
     const totalPages = getTotalPages();
     const pages = [];
-    
+
     if (totalPages <= 7) {
       // Show all pages if total pages <= 7
       for (let i = 1; i <= totalPages; i++) {
@@ -203,7 +203,7 @@ function Product() {
         pages.push(totalPages);
       }
     }
-    
+
     return pages;
   };
 
@@ -241,7 +241,7 @@ function Product() {
     const handleClickOutside = () => {
       setOpenDropdown(null);
     };
-    
+
     if (openDropdown !== null) {
       document.addEventListener('click', handleClickOutside);
       return () => document.removeEventListener('click', handleClickOutside);
@@ -267,7 +267,7 @@ function Product() {
   };
 
   const handleEdit = (productId) => {
-    navigate(`/admin/edit-product/${productId}`); 
+    navigate(`/admin/edit-product/${productId}`);
     setOpenDropdown(null);
   };
 
@@ -284,13 +284,13 @@ function Product() {
 
   const handleDelete = async () => {
     if (!productToDelete) return;
-    
+
     try {
       setDeleteLoading(productToDelete);
       const response = await deleteProduct(productToDelete);
-      
+
       if (response && response.status === 200) {
-        setProducts(prevProducts => 
+        setProducts(prevProducts =>
           prevProducts.filter(product => product._id !== productToDelete)
         );
         console.log("Product deleted successfully:", productToDelete);
@@ -335,7 +335,7 @@ function Product() {
         <div className="p-4">
           <div className="text-center text-red-600 p-8">
             <p>{error}</p>
-            <button 
+            <button
               onClick={fetchProducts}
               className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
             >
@@ -357,7 +357,7 @@ function Product() {
             </h1>
             <Link
               to="/admin/add-product"
-              style={{backgroundColor:"#50311D"}}
+              style={{ backgroundColor: "#50311D" }}
               className="flex items-center gap-2 no-underline   text-white px-4 py-2 rounded-lg font-medium transition-colors"
             >
               <Plus className="w-4 h-4" />
@@ -381,9 +381,8 @@ function Product() {
               </div>
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${
-                  showFilters ? 'bg-blue-50 border-blue-300' : 'border-gray-300 hover:bg-gray-50'
-                }`}
+                className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${showFilters ? 'bg-blue-50 border-blue-300' : 'border-gray-300 hover:bg-gray-50'
+                  }`}
               >
                 <Filter className="w-4 h-4" />
                 Filters
@@ -554,13 +553,18 @@ function Product() {
                         <td className="py-4 px-6">
                           <div className="flex items-center gap-3">
                             <img
-                              src={product.images.length > 0 ? getImageUrl(product.images[0]) : "/src/assets/product.jpg"}
+                              src={
+                                product.images?.length > 0
+                                  ? `https://blackterry.in/uploads/${product.images[0]}`
+                                  : "/src/assets/product.jpg"
+                              }
                               alt={product.title}
                               className="w-12 h-12 object-cover rounded-lg border"
                               onError={(e) => {
-                                e.target.src = "/src/assets/product.jpg";
+                                e.target.src = "/src/assets/product.jpg"; // fallback if image fails
                               }}
                             />
+
                             <div>
                               <span className="text-sm font-semibold text-gray-900 block">
                                 {product.title}
@@ -575,10 +579,9 @@ function Product() {
                           {product.product_Code}
                         </td>
                         <td className="py-4 px-6">
-                          <span className={`text-sm font-semibold ${
-                            product.totalStock > 10 ? 'text-green-600' : 
-                            product.totalStock > 0 ? 'text-yellow-600' : 'text-red-600'
-                          }`}>
+                          <span className={`text-sm font-semibold ${product.totalStock > 10 ? 'text-green-600' :
+                              product.totalStock > 0 ? 'text-yellow-600' : 'text-red-600'
+                            }`}>
                             {product.totalStock}
                           </span>
                         </td>
@@ -734,14 +737,13 @@ function Product() {
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="text-gray-500">Stock:</span>
-                        <span className={`ml-2 font-semibold ${
-                          product.totalStock > 10 ? 'text-green-600' : 
-                          product.totalStock > 0 ? 'text-yellow-600' : 'text-red-600'
-                        }`}>
+                        <span className={`ml-2 font-semibold ${product.totalStock > 10 ? 'text-green-600' :
+                            product.totalStock > 0 ? 'text-yellow-600' : 'text-red-600'
+                          }`}>
                           {product.totalStock}
                         </span>
                       </div>

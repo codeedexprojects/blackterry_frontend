@@ -91,7 +91,7 @@ function OrderList() {
         <Header />
         <div className="container py-5 text-center">
           <div className="alert alert-danger">{error}</div>
-          <button 
+          <button
             className="btn btn-primary mt-3"
             onClick={() => window.location.reload()}
           >
@@ -121,7 +121,7 @@ function OrderList() {
       <Header />
       <div className="container py-5">
         <h4 className="mb-4">Your Orders</h4>
-        
+
         {orders.map((order) => (
           <Card key={order._id} className="mb-3">
             <Card.Body>
@@ -129,12 +129,16 @@ function OrderList() {
                 {/* Product Image - Show first product image */}
                 <Col xs={3} md={2}>
                   <img
-                    src={order.products[0]?.productId?.images?.[0] || tshirt4}
+                    src={
+                      order.products[0]?.productId?.images?.length > 0
+                        ? `https://blackterry.in/uploads/${order.products[0].productId.images[0]}`
+                        : tshirt4
+                    }
                     alt={order.products[0]?.productId?.title || "Product"}
                     className="img-fluid rounded"
                   />
                 </Col>
-                
+
                 {/* Product Info */}
                 <Col xs={5} md={6}>
                   <div className="fw-medium">
@@ -147,24 +151,24 @@ function OrderList() {
                     {order.products[0]?.quantity && ` | Qty: ${order.products[0].quantity}`}
                   </div>
                   <div className="mt-2">
-                    <Badge 
-                      bg={getStatusBadgeClass(order.status)} 
+                    <Badge
+                      bg={getStatusBadgeClass(order.status)}
                       className="text-capitalize"
                     >
                       {order.status}
                     </Badge>
                   </div>
                 </Col>
-                
+
                 {/* Dates */}
                 <Col xs={4} md={3} className="text-end">
                   <div className="small text-muted">Ordered: {formatDate(order.createdAt)}</div>
                   <div className="small text-muted">Expected: {calculateExpectedDelivery(order.createdAt)}</div>
                 </Col>
-                
+
                 {/* View Details */}
                 <Col xs={12} md={1} className="text-end mt-2 mt-md-0">
-                  <button 
+                  <button
                     className="btn btn-link p-0 text-dark"
                     onClick={() => {
                       // Navigate to order details page with order._id

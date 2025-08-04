@@ -7,6 +7,8 @@ import Header from "/src/Components/Header";
 import Footer from "/src/Components/Footer";
 import { getAddress, getCheckout, initiateOrder, confirmOrder } from "../services/allApi";
 
+const IMAGE_BASE_URL = "https://blackterry.in/uploads/";
+
 function CheckoutPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -62,7 +64,7 @@ function CheckoutPage() {
     script.src = 'https://checkout.razorpay.com/v1/checkout.js';
     script.async = true;
     document.body.appendChild(script);
-    
+
     return () => {
       // Cleanup script on unmount
       if (document.body.contains(script)) {
@@ -83,14 +85,14 @@ function CheckoutPage() {
       currency: orderResponse.currency,
       name: "BLACK TERRY",
       description: "Fashion E-commerce Platform",
-      image: "/logo.png", 
+      image: "/logo.png",
       order_id: orderResponse.orderId,
       handler: async function (response) {
         console.log("Razorpay Payment Success:", response);
-        
+
         try {
           setPaymentProcessing(true);
-          
+
           const confirmPayload = {
             userId: localStorage.getItem('userId'),
             addressId: selectedAddress._id,
@@ -103,7 +105,7 @@ function CheckoutPage() {
           console.log("Confirming order with payload:", confirmPayload);
 
           const confirmResponse = await confirmOrder(confirmPayload);
-          
+
           if (confirmResponse && confirmResponse.data) {
             // Payment successful, navigate to success page
             navigate("/order-confirmation", {
@@ -136,7 +138,7 @@ function CheckoutPage() {
         color: "#50311D",
       },
       modal: {
-        ondismiss: function() {
+        ondismiss: function () {
           setPaymentProcessing(false);
           console.log('Payment modal closed');
         }
@@ -144,7 +146,7 @@ function CheckoutPage() {
     };
 
     const razorpay = new window.Razorpay(options);
-    
+
     razorpay.on('payment.failed', function (response) {
       console.error('Payment failed:', response.error);
       alert('Payment failed: ' + response.error.description);
@@ -159,7 +161,7 @@ function CheckoutPage() {
       alert("Please select a delivery address");
       return;
     }
-    
+
     const userId = localStorage.getItem('userId');
     if (!userId) {
       alert("Please log in to place an order");
@@ -178,10 +180,10 @@ function CheckoutPage() {
       console.log("Initiating order with payload:", initiatePayload);
 
       const response = await initiateOrder(initiatePayload);
-      
+
       if (response && response.data) {
         console.log("Order initiated successfully:", response.data);
-        
+
         // Check if response contains required Razorpay data
         if (response.data.orderId && response.data.amount) {
           handleRazorpayPayment(response.data);
@@ -306,8 +308,8 @@ function CheckoutPage() {
                 <button
                   className="btn d-flex align-items-center px-3 py-2"
                   onClick={handleAddNewAddress}
-                  style={{ 
-                    backgroundColor: "#50311D", 
+                  style={{
+                    backgroundColor: "#50311D",
                     color: "white",
                     border: "none",
                     borderRadius: "8px",
@@ -328,18 +330,18 @@ function CheckoutPage() {
                   <p className="mt-3 mb-0 text-muted">Loading your addresses...</p>
                 </div>
               ) : addresses.length === 0 ? (
-                <div className="text-center py-5" style={{ 
-                  backgroundColor: "#f8f9fa", 
+                <div className="text-center py-5" style={{
+                  backgroundColor: "#f8f9fa",
                   borderRadius: "12px",
                   border: "2px dashed #dee2e6"
                 }}>
                   <div className="mb-3">
-                    <div 
+                    <div
                       className="d-inline-flex align-items-center justify-content-center rounded-circle"
-                      style={{ 
-                        width: "60px", 
-                        height: "60px", 
-                        backgroundColor: "#e9ecef" 
+                      style={{
+                        width: "60px",
+                        height: "60px",
+                        backgroundColor: "#e9ecef"
                       }}
                     >
                       <MapPin size={24} className="text-muted" />
@@ -350,8 +352,8 @@ function CheckoutPage() {
                   <button
                     className="btn d-flex align-items-center mx-auto px-4 py-2"
                     onClick={handleAddNewAddress}
-                    style={{ 
-                      backgroundColor: "#50311D", 
+                    style={{
+                      backgroundColor: "#50311D",
                       color: "white",
                       border: "none",
                       borderRadius: "8px",
@@ -380,28 +382,28 @@ function CheckoutPage() {
                       }}
                     >
                       {/* Selection indicator */}
-                      <div 
+                      <div
                         className="position-absolute"
                         style={{ top: "15px", right: "15px" }}
                       >
                         {selectedAddress?._id === address._id ? (
-                          <div 
+                          <div
                             className="d-flex align-items-center justify-content-center rounded-circle"
-                            style={{ 
-                              width: "24px", 
-                              height: "24px", 
-                              backgroundColor: "#50311D" 
+                            style={{
+                              width: "24px",
+                              height: "24px",
+                              backgroundColor: "#50311D"
                             }}
                           >
                             <Check size={14} className="text-white" />
                           </div>
                         ) : (
-                          <div 
+                          <div
                             className="rounded-circle"
-                            style={{ 
-                              width: "24px", 
-                              height: "24px", 
-                              border: "2px solid #dee2e6" 
+                            style={{
+                              width: "24px",
+                              height: "24px",
+                              border: "2px solid #dee2e6"
                             }}
                           ></div>
                         )}
@@ -418,10 +420,10 @@ function CheckoutPage() {
                             </h6>
                             <div className="d-flex gap-2">
                               {address.defaultAddress && (
-                                <span 
+                                <span
                                   className="badge d-flex align-items-center"
-                                  style={{ 
-                                    backgroundColor: "#50311D", 
+                                  style={{
+                                    backgroundColor: "#50311D",
                                     color: "white",
                                     fontSize: "10px",
                                     padding: "4px 8px"
@@ -431,9 +433,9 @@ function CheckoutPage() {
                                   Default
                                 </span>
                               )}
-                              <span 
+                              <span
                                 className="badge"
-                                style={{ 
+                                style={{
                                   backgroundColor: address.addressType?.toLowerCase() === 'home' ? "#e7f3ff" : "#f0f9ff",
                                   color: address.addressType?.toLowerCase() === 'home' ? "#0066cc" : "#0080ff",
                                   fontSize: "10px",
@@ -517,7 +519,7 @@ function CheckoutPage() {
                 className="btn btn-dark w-100 py-3 fw-bold"
                 onClick={handlePay}
                 disabled={paymentProcessing}
-                style={{ 
+                style={{
                   backgroundColor: paymentProcessing ? "#6c757d" : "#50311D",
                   opacity: paymentProcessing ? 0.7 : 1
                 }}
@@ -548,7 +550,11 @@ function CheckoutPage() {
                 <div key={item._id || index} className="d-flex mb-4">
                   <div className="me-3 position-relative">
                     <img
-                      src={item.productId.images?.[0] || tshirt2}
+                      src={
+                        item.productId.images && item.productId.images.length > 0
+                          ? `https://blackterry.in/uploads/${item.productId.images[0]}`
+                          : tshirt2
+                      }
                       alt={item.productId.title}
                       className="rounded"
                       style={{ width: "80px", height: "80px", objectFit: "cover" }}
@@ -567,7 +573,7 @@ function CheckoutPage() {
                   </div>
                 </div>
               ))}
-              
+
               <div className="border-top pt-3 mb-2">
                 <div className="d-flex justify-content-between mb-2">
                   <span>Subtotal</span>
@@ -588,7 +594,7 @@ function CheckoutPage() {
                   <span>₹{taxes.toFixed(2)}</span>
                 </div>
               </div>
-              
+
               <div className="border-top pt-3">
                 <div className="d-flex justify-content-between">
                   <h5>Total</h5>
@@ -631,7 +637,7 @@ function CheckoutPage() {
           background: #3d2517;
         }
       `}</style>
-      
+
       <Footer />
     </>
   );

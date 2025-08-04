@@ -137,8 +137,13 @@ export const getProductById = async (id) => {
 };
 
 export const addToWishlist = async (reqBody) => {
+    const token = localStorage.getItem('userToken');
     try {
-        const response = await axios.post(`${BASE_URL}${API_ENDPOINTS.WISHLIST}`, reqBody);
+        const response = await axios.post(`${BASE_URL}${API_ENDPOINTS.WISHLIST}`, reqBody, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+    });
         return response;
     } catch (error) {
         console.log(error);
@@ -146,8 +151,12 @@ export const addToWishlist = async (reqBody) => {
 };
 
 export const removeWishlist = async (reqBody) => {
+    const token = localStorage.getItem('userToken');
     try {
         const response = await axios.delete(`${BASE_URL}${API_ENDPOINTS.WISHLIST}`, {
+             headers: {
+                Authorization: `Bearer ${token}`
+            },
             data: reqBody
         });
         return response;
@@ -157,8 +166,13 @@ export const removeWishlist = async (reqBody) => {
 };
 
 export const getWishlist = async (id) => {
+    const token = localStorage.getItem('userToken');
     try {
-        const response = await axios.get(`${BASE_URL}${API_ENDPOINTS.WISHLIST}/${id}`);
+        const response = await axios.get(`${BASE_URL}${API_ENDPOINTS.WISHLIST}/${id}`,{
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+    });
         return response;
     } catch (error) {
         console.log(error);
@@ -259,7 +273,7 @@ export const initiateOrder = async (reqBody) => {
         const response = await axios.post(`${BASE_URL}${API_ENDPOINTS.ORDER}/create`, reqBody, {
             headers: {
                 Authorization: `Bearer ${token}`,
-                 'Content-Type': 'application/json'
+                'Content-Type': 'application/json'
             }
         });
         return response;
@@ -368,14 +382,14 @@ export const returnOrder = async (orderId, reqBody) => {
 };
 
 export const searchProducts = async (query) => {
-  try {
-    const response = await axios.get(`${BASE_URL}/search`, {
-      params: {
-        query: query,
-      },
-    });
-    return response;
-  } catch (error) {
-    console.log(error);
-  }
+    try {
+        const response = await axios.get(`${BASE_URL}/search`, {
+            params: {
+                query: query,
+            },
+        });
+        return response;
+    } catch (error) {
+        console.log(error);
+    }
 };

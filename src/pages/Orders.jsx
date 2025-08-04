@@ -19,7 +19,7 @@ function OrderDetails() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   // Modal states
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
@@ -174,7 +174,7 @@ function OrderDetails() {
         <Header />
         <div className="container py-5 text-center">
           <div className="alert alert-danger">{error}</div>
-          <button 
+          <button
             className="btn btn-primary mt-3"
             onClick={() => window.location.reload()}
           >
@@ -213,7 +213,11 @@ function OrderDetails() {
               <Row className="g-2 align-items-center">
                 <Col xs={3}>
                   <img
-                    src={order.products[0]?.productId?.images?.[0] || tshirt4}
+                    src={
+                      order.products[0]?.productId?.images?.length > 0
+                        ? `https://blackterry.in/uploads/${order.products[0].productId.images[0]}`
+                        : tshirt4
+                    }
                     alt={order.products[0]?.productId?.title}
                     className="img-fluid rounded"
                   />
@@ -240,7 +244,7 @@ function OrderDetails() {
               <div>
                 <div className="text-muted small">Customer</div>
                 <div className="fw-medium d-flex align-items-center">
-                  <FaUser className="me-2" /> 
+                  <FaUser className="me-2" />
                   {order.shippingAddress?.name}
                 </div>
                 <div className="text-muted small">
@@ -344,8 +348,8 @@ function OrderDetails() {
         {/* Action Buttons */}
         <div className="d-flex justify-content-end mt-4">
           {showCancelButton && (
-            <Button 
-              variant="outline-danger" 
+            <Button
+              variant="outline-danger"
               className="me-2"
               onClick={handleCancelOrder}
             >
@@ -353,7 +357,7 @@ function OrderDetails() {
             </Button>
           )}
           {showReturnButton && (
-            <Button 
+            <Button
               variant="outline-primary"
               onClick={handleReturnOrder}
             >
@@ -371,12 +375,12 @@ function OrderDetails() {
         <Modal.Body>
           {submitError && <Alert variant="danger">{submitError}</Alert>}
           {submitSuccess && <Alert variant="success">{submitSuccess}</Alert>}
-          
+
           <Form>
             <Form.Group className="mb-3">
               <Form.Label>Reason for cancellation *</Form.Label>
-              <Form.Select 
-                value={cancelReason} 
+              <Form.Select
+                value={cancelReason}
                 onChange={(e) => setCancelReason(e.target.value)}
                 disabled={submitting}
               >
@@ -386,7 +390,7 @@ function OrderDetails() {
                 ))}
               </Form.Select>
             </Form.Group>
-            
+
             {cancelReason === "Other" && (
               <Form.Group className="mb-3">
                 <Form.Label>Please specify</Form.Label>
@@ -401,22 +405,22 @@ function OrderDetails() {
               </Form.Group>
             )}
           </Form>
-          
+
           <div className="text-muted small">
-            <strong>Note:</strong> Your cancellation request will be reviewed by our admin team. 
+            <strong>Note:</strong> Your cancellation request will be reviewed by our admin team.
             You'll be notified once the request is approved or declined.
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button 
-            variant="secondary" 
+          <Button
+            variant="secondary"
             onClick={() => setShowCancelModal(false)}
             disabled={submitting}
           >
             Close
           </Button>
-          <Button 
-            variant="danger" 
+          <Button
+            variant="danger"
             onClick={submitCancelRequest}
             disabled={submitting || !cancelReason.trim()}
           >
@@ -440,12 +444,12 @@ function OrderDetails() {
         <Modal.Body>
           {submitError && <Alert variant="danger">{submitError}</Alert>}
           {submitSuccess && <Alert variant="success">{submitSuccess}</Alert>}
-          
+
           <Form>
             <Form.Group className="mb-3">
               <Form.Label>Reason for return *</Form.Label>
-              <Form.Select 
-                value={returnReason} 
+              <Form.Select
+                value={returnReason}
                 onChange={(e) => setReturnReason(e.target.value)}
                 disabled={submitting}
               >
@@ -455,7 +459,7 @@ function OrderDetails() {
                 ))}
               </Form.Select>
             </Form.Group>
-            
+
             {returnReason === "Other" && (
               <Form.Group className="mb-3">
                 <Form.Label>Please specify</Form.Label>
@@ -470,22 +474,22 @@ function OrderDetails() {
               </Form.Group>
             )}
           </Form>
-          
+
           <div className="text-muted small">
-            <strong>Note:</strong> Your return request will be reviewed by our admin team. 
+            <strong>Note:</strong> Your return request will be reviewed by our admin team.
             You'll be notified once the request is approved. Returns are accepted within 7 days of delivery.
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button 
-            variant="secondary" 
+          <Button
+            variant="secondary"
             onClick={() => setShowReturnModal(false)}
             disabled={submitting}
           >
             Close
           </Button>
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             onClick={submitReturnRequest}
             disabled={submitting || !returnReason.trim()}
           >

@@ -3,6 +3,8 @@ import { Plus, Edit, Trash2, Save, X, Upload, ExternalLink, Eye, EyeOff } from '
 import { addCarousal, deleteCarousel, getCarousels, updateCarousal } from '../serveices/adminApi';
 import AdminLayout from '../Components/AdminLayout';
 
+// Base URL for images
+const IMAGE_BASE_URL = "https://blackterry.in/uploads/";
 
 const CarouselManager = () => {
   const [carousels, setCarousels] = useState([]);
@@ -119,11 +121,20 @@ const CarouselManager = () => {
     try {
       const formData = new FormData();
       formData.append('isActive', !item.isActive);
-      await mockAPI.updateCarousal(formData, item._id);
+      await updateCarousal(formData, item._id);
       fetchCarousels();
     } catch (error) {
       console.error('Error updating carousel status:', error);
     }
+  };
+
+  // Helper function to get image URL
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return `https://via.placeholder.com/400x200?text=No+Image`;
+    // If it's already a full URL, return as is
+    if (imagePath.startsWith('http')) return imagePath;
+    // Otherwise, prepend the base URL
+    return `${IMAGE_BASE_URL}${imagePath}`;
   };
 
   
@@ -218,6 +229,16 @@ const CarouselManager = () => {
                           className="w-16 h-16 object-cover rounded-lg"
                         />
                       )}
+                      {editingItem && !previewImage && editingItem.image && (
+                        <div className="flex items-center gap-2">
+                          <img
+                            src={getImageUrl(editingItem.image)}
+                            alt="Current"
+                            className="w-16 h-16 object-cover rounded-lg"
+                          />
+                          <span className="text-sm text-gray-500">Current image</span>
+                        </div>
+                      )}
                     </div>
                   </div>
     
@@ -242,80 +263,96 @@ const CarouselManager = () => {
               </div>
             )}
     
-            {/* Carousel Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {carousels.map((item) => (
-                <div key={item._id} className="bg-white rounded-lg shadow-sm overflow-hidden">
-                  <div className="relative">
-                    <img
-                      src={`https://via.placeholder.com/400x200?text=${encodeURIComponent(item.title)}`}
-                      alt={item.title}
-                      className="w-full h-48 object-cover"
-                    />
-                    <div className="absolute top-2 right-2 flex gap-2">
-                      <button
-                        onClick={() => toggleActive(item)}
-                        className={`p-2 rounded-full ${
-                          item.isActive 
-                            ? 'bg-green-500 text-white' 
-                            : 'bg-gray-500 text-white'
-                        }`}
-                      >
-                        {item.isActive ? <Eye size={16} /> : <EyeOff size={16} />}
-                      </button>
-                    </div>
-                  </div>
-    
-                  <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3>
-                    <div className="flex items-center gap-2 mb-3">
-                      <ExternalLink size={16} className="text-gray-500" />
-                      <a
-                        href={item.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800 text-sm truncate"
-                      >
-                        {item.link}
-                      </a>
-                    </div>
-    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          item.isActive 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {item.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                      </div>
-    
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEdit(item)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item._id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-    
-                    <div className="mt-3 text-xs text-gray-500">
-                      Created: {new Date(item.createdAt).toLocaleDateString()}
-                    </div>
-                  </div>
+            {/* Loading State */}
+            {loading && (
+              <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+                <div className="text-gray-500">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                  <p>Loading carousel items...</p>
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
     
-            {carousels.length === 0 && (
+            {/* Carousel Grid */}
+            {!loading && carousels.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {carousels.map((item) => (
+                  <div key={item._id} className="bg-white rounded-lg shadow-sm overflow-hidden">
+                    <div className="relative">
+                      <img
+                        src={getImageUrl(item.image)}
+                        alt={item.title}
+                        className="w-full h-48 object-cover"
+                        onError={(e) => {
+                          e.target.src = `https://via.placeholder.com/400x200?text=${encodeURIComponent(item.title)}`;
+                        }}
+                      />
+                      <div className="absolute top-2 right-2 flex gap-2">
+                        <button
+                          onClick={() => toggleActive(item)}
+                          className={`p-2 rounded-full ${
+                            item.isActive 
+                              ? 'bg-green-500 text-white' 
+                              : 'bg-gray-500 text-white'
+                          }`}
+                        >
+                          {item.isActive ? <Eye size={16} /> : <EyeOff size={16} />}
+                        </button>
+                      </div>
+                    </div>
+      
+                    <div className="p-4">
+                      <h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3>
+                      <div className="flex items-center gap-2 mb-3">
+                        <ExternalLink size={16} className="text-gray-500" />
+                        <a
+                          href={item.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 text-sm truncate"
+                        >
+                          {item.link}
+                        </a>
+                      </div>
+      
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            item.isActive 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {item.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+      
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEdit(item)}
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(item._id)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+      
+                      <div className="mt-3 text-xs text-gray-500">
+                        Created: {new Date(item.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+    
+            {/* Empty State */}
+            {!loading && carousels.length === 0 && (
               <div className="bg-white rounded-lg shadow-sm p-12 text-center">
                 <div className="text-gray-500 mb-4">
                   <Upload size={48} className="mx-auto mb-4" />
@@ -324,7 +361,8 @@ const CarouselManager = () => {
                 </div>
                 <button
                   onClick={() => setShowAddForm(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2 transition-colors"
+                  style={{backgroundColor:"#50311D"}}
+                  className="text-white px-6 py-2 rounded-lg inline-flex items-center gap-2 transition-colors"
                 >
                   <Plus size={20} />
                   Add First Carousel

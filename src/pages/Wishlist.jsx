@@ -109,7 +109,7 @@ function Wishlist() {
 
       let selectedColor = null;
       let selectedSize = null;
-      
+
       if (item.colors && item.colors.length > 0) {
         selectedColor = item.colors[0].colorName || item.colors[0].color || item.colors[0];
         if (item.colors[0].sizes && item.colors[0].sizes.length > 0) {
@@ -117,17 +117,17 @@ function Wishlist() {
         }
       }
 
-      
+
       if (!selectedColor) {
         selectedColor = "Default";
       }
       if (!selectedSize) {
-        selectedSize = "M"; 
+        selectedSize = "M";
       }
 
       const reqBody = {
         userId: userId,
-        productId: item.productId, 
+        productId: item.productId,
         quantity: 1,
         color: selectedColor,
         size: selectedSize
@@ -292,7 +292,11 @@ function Wishlist() {
                   }}
                 >
                   <img
-                    src={item.images && item.images.length > 0 ? item.images[0] : '/src/assets/placeholder.jpg'}
+                    src={
+                      item.images && item.images.length > 0
+                        ? `https://blackterry.in/uploads/${item.images[0]}`
+                        : '/src/assets/placeholder.jpg'
+                    }
                     alt={item.name}
                     style={{
                       width: "100%",

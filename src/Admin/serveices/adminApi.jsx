@@ -14,10 +14,12 @@ export const adminLogin = async (credentials) => {
 }
 
 export const addProduct = async (reqBody) => {
+   const token = localStorage.getItem('adminToken');
     try {
         const response = await axios.post(`${BASE_URL}${API_ENDPOINTS.PRODUCTS}/create-product`, reqBody, {
             headers: {
-                'Content-Type': 'multipart/form-data',           
+                'Content-Type': 'multipart/form-data',  
+                 Authorization: `Bearer ${token}`         
             }
         });
         return response;
@@ -27,10 +29,12 @@ export const addProduct = async (reqBody) => {
 };
 
 export const updateProduct = async (id,reqBody) => {
+  const token = localStorage.getItem('adminToken');
     try {
         const response = await axios.patch(`${BASE_URL}${API_ENDPOINTS.PRODUCTS}/${id}`, reqBody, {
             headers: {
-                'Content-Type': 'multipart/form-data',           
+                'Content-Type': 'multipart/form-data',  
+                 Authorization: `Bearer ${token}`             
             }
         });
         return response;
@@ -40,8 +44,12 @@ export const updateProduct = async (id,reqBody) => {
 };
 
 export const deleteProduct = async (id) => {
+   const token = localStorage.getItem('adminToken');
     try {
         const response = await axios.delete(`${BASE_URL}${API_ENDPOINTS.PRODUCTS}/${id}`, {
+            headers: {
+               Authorization: `Bearer ${token}`    
+            }
         });
         return response;
     } catch (error) {
@@ -68,8 +76,12 @@ export const getProducts = async () => {
 };
 
 export const addTextSlider = async (reqBody) => {
+   const token = localStorage.getItem('adminToken');
     try {
         const response = await axios.post(`${BASE_URL}${API_ENDPOINTS.TEXT_SLIDER}`, reqBody, {
+        headers: {
+           Authorization: `Bearer ${token}`    
+        }
         });
         return response;
     } catch (error) {
@@ -78,8 +90,12 @@ export const addTextSlider = async (reqBody) => {
 };
 
 export const getTextSliders = async () => {
+  const token = localStorage.getItem('adminToken');
     try {
         const response = await axios.get(`${BASE_URL}${API_ENDPOINTS.TEXT_SLIDER}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
         });
         return response;
     } catch (error) {
@@ -88,8 +104,12 @@ export const getTextSliders = async () => {
 };
 
 export const updateTextSlider = async (id,reqBody) => {
+  const token = localStorage.getItem('adminToken');
     try {
         const response = await axios.patch(`${BASE_URL}${API_ENDPOINTS.TEXT_SLIDER}/${id}`, reqBody, {
+            headers: {
+               Authorization: `Bearer ${token}`    
+            }
         });
         return response;
     } catch (error) {
@@ -98,8 +118,12 @@ export const updateTextSlider = async (id,reqBody) => {
 };
 
 export const deleteTextSlider = async (id,reqBody) => {
+  const token = localStorage.getItem('adminToken');
     try {
         const response = await axios.delete(`${BASE_URL}${API_ENDPOINTS.TEXT_SLIDER}/${id}`, reqBody, {
+            headers: {
+               Authorization: `Bearer ${token}`    
+            }
         });
         return response;
     } catch (error) {
@@ -108,10 +132,12 @@ export const deleteTextSlider = async (id,reqBody) => {
 };
 
 export const addCarousal = async (reqBody) => {
+  const token = localStorage.getItem('adminToken');
     try {
         const response = await axios.post(`${BASE_URL}${API_ENDPOINTS.CAROUSEL}/create`, reqBody, {
             headers: {
-                'Content-Type': 'multipart/form-data',           
+                'Content-Type': 'multipart/form-data',  
+                 Authorization: `Bearer ${token}`             
             }
         });
         return response;
@@ -121,6 +147,7 @@ export const addCarousal = async (reqBody) => {
     }
 };
 export const getCarousels = async () => {
+   const token = localStorage.getItem('adminToken');
     try {
         const response = await axios.get(`${BASE_URL}${API_ENDPOINTS.CAROUSEL}`);
         return response;
@@ -131,10 +158,12 @@ export const getCarousels = async () => {
 }
 
 export const updateCarousal = async (reqBody, id) => {
+   const token = localStorage.getItem('adminToken');
     try {
         const response = await axios.patch(`${BASE_URL}${API_ENDPOINTS.CAROUSEL}/${id}`, reqBody, {
             headers: {
-                'Content-Type': 'multipart/form-data',           
+                'Content-Type': 'multipart/form-data', 
+                 Authorization: `Bearer ${token}`              
             }
         });
         return response;
@@ -145,8 +174,12 @@ export const updateCarousal = async (reqBody, id) => {
 };
 
 export const deleteCarousel = async (id) => {
+   const token = localStorage.getItem('adminToken');
     try {
         const response = await axios.delete(`${BASE_URL}${API_ENDPOINTS.CAROUSEL}/${id}`, {
+            headers: {
+               Authorization: `Bearer ${token}`    
+            }
         });
         return response;
     } catch (error) {

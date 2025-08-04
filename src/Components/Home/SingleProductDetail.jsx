@@ -13,6 +13,7 @@ const ProductDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [buyNowLoading, setBuyNowLoading] = useState(false);
+  const IMG_BASE_URL = "https://blackterry.in/uploads";
 
   const handleViewDetails = ()=>{
     navigate(`/details/${currentProduct._id}`);
@@ -163,13 +164,12 @@ const ProductDetails = () => {
     return colorData ? colorData.sizes : [];
   };
 
-  const getProductImage = () => {
-    if (currentProduct?.images && currentProduct.images.length > 0) {
-      return `/api/images/${currentProduct.images[0]}`;
-    }
-    return "/default-tshirt.jpg";
-  };
-
+const getProductImage = () => {
+  if (currentProduct?.images && currentProduct.images.length > 0) {
+    return `${IMG_BASE_URL}/${currentProduct.images[0]}`;
+  }
+  return "/default-tshirt.jpg"; // Or use a full URL if needed
+};
   if (loading) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-8 flex justify-center items-center">

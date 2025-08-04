@@ -8,6 +8,8 @@ import FilterBar from "../Components/Home/Filter";
 import ProductGrid from "../Components/Home/ProductGrid";
 import ProductDetails from "../Components/Home/SingleProductDetail";
 import { getProducts } from "../services/allApi";
+import ProductCarousel from "../Components/Shop/FeatureProduct";
+
 
 function Home() {
   const navigate = useNavigate();
@@ -155,13 +157,8 @@ function Home() {
       
      
       <ProductDetails />
-      <div className="w-full flex justify-center items-center">
-        <img
-          src={adds}
-          alt="Ad Banner"
-          className="w-full h-auto object-contain"
-        />
-      </div>
+     
+     <ProductCarousel></ProductCarousel>
       <Footer />
     </div>
   );

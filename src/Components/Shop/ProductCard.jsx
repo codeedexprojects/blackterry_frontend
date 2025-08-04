@@ -10,6 +10,8 @@ const ShopProductCard = ({ product }) => {
   const [loading, setLoading] = useState(false);
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [checkingWishlist, setCheckingWishlist] = useState(true);
+    const IMG_BASE_URL = "https://blackterry.in/uploads"
+
 
   useEffect(() => {
     AOS.init({
@@ -128,7 +130,7 @@ const ShopProductCard = ({ product }) => {
         <div className="relative overflow-hidden rounded-lg shadow-sm group-hover:shadow-lg transition-shadow duration-300 ease-in-out">
           <div className="overflow-hidden">
             <img
-              src={product.image}
+              src={`${IMG_BASE_URL}/${product.images[0]}`}
               alt={product.name}
               className="w-100 img-fluid transform group-hover:scale-105 transition-transform duration-300 ease-in-out"
               style={{ height: "400px", objectFit: "cover" }}

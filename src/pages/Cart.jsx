@@ -6,6 +6,8 @@ import Footer from "/src/Components/Footer";
 import { createCheckout, deletCart, getCart, updateCart } from "../services/allApi";
 import { toast, ToastContainer } from "react-toastify";
 
+const IMAGE_BASE_URL = "https://blackterry.in/uploads/";
+
 function Cart() {
   const navigate = useNavigate();
   const [cartItems, setCartItems] = useState([]);
@@ -38,7 +40,9 @@ function Cart() {
           size: item.size,
           color: item.color,
           quantity: item.quantity,
-          image: item.productId.images?.[0] || "/src/assets/shirt1.jpg",
+          image: item.productId.images?.[0] 
+            ? `${IMAGE_BASE_URL}${item.productId.images[0]}` 
+            : "/src/assets/shirt1.jpg",
           productId: item.productId._id,
           features: item.features
         }));
