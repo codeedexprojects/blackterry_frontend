@@ -24,6 +24,10 @@ import AddAddress from './pages/AddAddress'
 import { CustomToastContainer } from './Components/CustomeToast'
 import OrderConfirmation from './pages/OrderConfirmation'
 import OrderList from './pages/OrderList'
+import CancellationRefundPolicy from './pages/Cancellation'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsAndConditions from './pages/TermCondition'
+import ShippingPolicy from './pages/ShippingPolicy'
 
 function App() {
 
@@ -48,6 +52,10 @@ function App() {
         <Route path='/add-address' element={<AddAddress />} />
         <Route path='/order-confirmation' element={<OrderConfirmation />} />
         <Route path='/order-list' element={<OrderList />} />
+        <Route path='/cancellation' element={<CancellationRefundPolicy />} />
+        <Route path='/privacy' element={<PrivacyPolicy />} />
+        <Route path='/terms' element={<TermsAndConditions />} />
+        <Route path='/shipping' element={<ShippingPolicy />} />
 
 
         <Route path="/admin/*" element={<Dashboard />} />
@@ -55,7 +63,7 @@ function App() {
 
 
       </Routes>
-       <CustomToastContainer />
+      <CustomToastContainer />
       {/* <Footer/> */}
     </>
   )

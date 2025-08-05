@@ -63,10 +63,10 @@ function Footer() {
         >
           <p>
             © 2025, Black Terry · All Rights Reserved ·{" "}
-            <a href="#" className="text-decoration-none text-muted">Refund policy</a> ·{" "}
-            <a href="#" className="text-decoration-none text-muted">Privacy policy</a> ·{" "}
-            <a href="#" className="text-decoration-none text-muted">Terms of service</a> ·{" "}
-            <a href="#" className="text-decoration-none text-muted">Shipping policy</a>
+            <a href="/cancellation" className="text-decoration-none text-muted">Refund policy</a> ·{" "}
+            <a href="/privacy" className="text-decoration-none text-muted">Privacy policy</a> ·{" "}
+            <a href="/terms" className="text-decoration-none text-muted">Terms of service</a> ·{" "}
+            <a href="/shipping" className="text-decoration-none text-muted">Shipping policy</a>
           </p>
         </div>
       </div>
