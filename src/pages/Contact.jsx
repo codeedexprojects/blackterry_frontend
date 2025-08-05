@@ -1,6 +1,7 @@
 import React from "react";
 import Header from "/src/Components/Header";
 import Footer from "/src/Components/Footer";
+import { Mail, Phone, MapPin } from "lucide-react"; // Optional: for icons
 
 function Contact() {
   return (
@@ -72,7 +73,7 @@ function Contact() {
             </div>
 
             {/* Send Button */}
-            <div className="text-start">
+            <div className="text-start mb-5">
               <button
                 style={{
                   backgroundColor: "#50311D",
@@ -84,6 +85,34 @@ function Contact() {
               >
                 Send
               </button>
+            </div>
+
+            {/* Contact Details */}
+            <div className="mt-4 p-4 border rounded" style={{ borderColor: "#50311D" }}>
+              <h5 style={{ color: "#50311D", fontWeight: "600", marginBottom: "15px" }}>
+                Contact Information
+              </h5>
+              <div className="mb-2 d-flex align-items-center gap-2">
+                <Phone className="text-success" size={18} />
+                <a href="tel:+919847072542" className="text-dark text-decoration-none">
+                  +91 98470 72542
+                </a>
+              </div>
+              <div className="mb-2 d-flex align-items-center gap-2">
+                <Mail className="text-success" size={18} />
+                <a href="mailto:blackterrytees@gmail.com" className="text-dark text-decoration-none">
+                  blackterrytees@gmail.com
+                </a>
+              </div>
+              <div className="d-flex align-items-start gap-2">
+                <MapPin className="text-success" size={18} />
+                <span>
+                  Blackterry Tees<br />
+                  Pappayi, Chappangadi - PO<br />
+                  Kottakkal, Malappuram<br />
+                  Kerala – 676503
+                </span>
+              </div>
             </div>
           </div>
         </div>
