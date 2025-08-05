@@ -8,18 +8,19 @@ const RecommendedProducts = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const IMG_BASE_URL = "https://blackterry.in/uploads"
+
 
   useEffect(() => {
     const fetchRecommendedProducts = async () => {
       try {
         const response = await getProducts();
-        
+
         if (response && response.data) {
-          // Filter out the current product and limit to 4 recommended products
           const recommended = response.data
             .filter(product => product._id !== id)
             .slice(0, 4);
-          
+
           setProducts(recommended);
         }
       } catch (err) {
@@ -47,7 +48,7 @@ const RecommendedProducts = () => {
           {[...Array(4)].map((_, index) => (
             <div key={index} className="col-6 col-md-3">
               <div className="card border-0 h-100">
-                <div className="position-relative overflow-hidden rounded bg-light" 
+                <div className="position-relative overflow-hidden rounded bg-light"
                   style={{ aspectRatio: "1/1" }}></div>
                 <div className="card-body px-0 pb-0">
                   <div className="placeholder-glow">
@@ -86,14 +87,18 @@ const RecommendedProducts = () => {
       <div className="row g-4">
         {products.map((product) => (
           <div key={product._id} className="col-6 col-md-3">
-            <div 
+            <div
               className="card border-0 h-100 cursor-pointer"
               onClick={() => handleProductClick(product._id)}
               style={{ cursor: 'pointer' }}
             >
               <div className="position-relative overflow-hidden rounded">
                 <img
-                  src={product.images?.[0] || "https://via.placeholder.com/300x300.png?text=No+Image"}
+                  src={
+                    product.images?.[0]
+                      ? `${IMG_BASE_URL}/${product.images[0]}`
+                      : "https://via.placeholder.com/300x300.png?text=No+Image"
+                  }
                   alt={product.title}
                   className="card-img-top"
                   style={{ aspectRatio: "1/1", objectFit: "cover" }}

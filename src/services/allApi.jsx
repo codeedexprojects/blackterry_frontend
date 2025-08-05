@@ -3,7 +3,7 @@ import { API_ENDPOINTS, BASE_URL } from './constants';
 
 export const userRegister = async (reqBody) => {
     try {
-        const response = await axios.post(`${BASE_URL}${API_ENDPOINTS.USER_AUTH}/regsiter`, reqBody, {
+        const response = await axios.post(`${BASE_URL}${API_ENDPOINTS.USER_AUTH}/register`, reqBody, {
         });
         return response.data;
     } catch (error) {

@@ -156,49 +156,88 @@ function CheckoutPage() {
     razorpay.open();
   };
 
+  // const handlePay = async () => {
+  //   if (!selectedAddress) {
+  //     alert("Please select a delivery address");
+  //     return;
+  //   }
+
+  //   const userId = localStorage.getItem('userId');
+  //   if (!userId) {
+  //     alert("Please log in to place an order");
+  //     return;
+  //   }
+
+  //   try {
+  //     setPaymentProcessing(true);
+
+  //     const initiatePayload = {
+  //       userId: userId,
+  //       addressId: selectedAddress._id,
+  //       checkoutId: checkoutId
+  //     };
+
+  //     console.log("Initiating order with payload:", initiatePayload);
+
+  //     const response = await initiateOrder(initiatePayload);
+
+  //     if (response && response.data) {
+  //       console.log("Order initiated successfully:", response.data);
+
+  //       // Check if response contains required Razorpay data
+  //       if (response.data.orderId && response.data.amount) {
+  //         handleRazorpayPayment(response.data);
+  //       } else {
+  //         throw new Error("Invalid response from order initiation");
+  //       }
+  //     } else {
+  //       throw new Error("Failed to initiate order");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error initiating order:", error);
+  //     alert("Failed to initiate payment. Please try again.");
+  //     setPaymentProcessing(false);
+  //   }
+  // };
   const handlePay = async () => {
-    if (!selectedAddress) {
-      alert("Please select a delivery address");
-      return;
-    }
+  if (!selectedAddress) {
+    alert("Please select a delivery address");
+    return;
+  }
 
-    const userId = localStorage.getItem('userId');
-    if (!userId) {
-      alert("Please log in to place an order");
-      return;
-    }
+  const userId = localStorage.getItem("userId");
+  if (!userId) {
+    alert("Please log in to place an order");
+    return;
+  }
 
-    try {
-      setPaymentProcessing(true);
+  try {
+    setPaymentProcessing(true);
 
-      const initiatePayload = {
-        userId: userId,
-        addressId: selectedAddress._id,
-        checkoutId: checkoutId
-      };
+    const initiatePayload = {
+      userId: userId,
+      addressId: selectedAddress._id,
+      checkoutId: checkoutId,
+    };
 
-      console.log("Initiating order with payload:", initiatePayload);
+    console.log("Simulating order placement with payload:", initiatePayload);
 
-      const response = await initiateOrder(initiatePayload);
+    // Simulate delay for processing
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-      if (response && response.data) {
-        console.log("Order initiated successfully:", response.data);
+    console.log("Order placed successfully (simulated)");
 
-        // Check if response contains required Razorpay data
-        if (response.data.orderId && response.data.amount) {
-          handleRazorpayPayment(response.data);
-        } else {
-          throw new Error("Invalid response from order initiation");
-        }
-      } else {
-        throw new Error("Failed to initiate order");
-      }
-    } catch (error) {
-      console.error("Error initiating order:", error);
-      alert("Failed to initiate payment. Please try again.");
-      setPaymentProcessing(false);
-    }
-  };
+    alert("Order placed successfully!");
+    // Optionally, redirect or clear cart here
+    // navigate("/order-success");
+  } catch (error) {
+    console.error("Simulated order failed:", error);
+    alert("Failed to place order. Please try again.");
+  } finally {
+    setPaymentProcessing(false);
+  }
+};
+
 
   const handleAddressSelect = (address) => {
     setSelectedAddress(address);
