@@ -9,7 +9,7 @@ const ColorStockManager = ({
   removeColor,
   calculateTotalStock
 }) => {
-  return (
+  return ( 
     <>
       <div>
         <label className="block mb-2 text-sm md:text-base font-medium">

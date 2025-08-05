@@ -393,3 +393,12 @@ export const searchProducts = async (query) => {
         console.log(error);
     }
 };
+
+export const getCarousels = async () => {
+    try {
+        const response = await axios.get(`${BASE_URL}${API_ENDPOINTS.CAROUSEL}`);
+        return response;
+    } catch (error) {
+        console.log(error);
+    }
+};

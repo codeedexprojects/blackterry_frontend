@@ -146,6 +146,7 @@ export const addCarousal = async (reqBody) => {
         throw error; 
     }
 };
+
 export const getCarousels = async () => {
    const token = localStorage.getItem('adminToken');
     try {

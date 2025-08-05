@@ -17,6 +17,8 @@ const CarouselManager = () => {
     link: ''
   });
   const [previewImage, setPreviewImage] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   useEffect(() => {
     fetchCarousels();
@@ -106,14 +108,20 @@ const CarouselManager = () => {
     setShowAddForm(true);
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this carousel item?')) {
-      try {
-        await deleteCarousel({}, id);
-        fetchCarousels();
-      } catch (error) {
-        console.error('Error deleting carousel:', error);
-      }
+  const confirmDelete = (item) => {
+    setItemToDelete(item);
+    setShowDeleteModal(true);
+  };
+
+ const handleDelete = async () => {
+    try {
+      await deleteCarousel(itemToDelete._id);
+      fetchCarousels();
+    } catch (error) {
+      console.error('Error deleting carousel:', error);
+    } finally {
+      setShowDeleteModal(false);
+      setItemToDelete(null);
     }
   };
 
@@ -159,6 +167,33 @@ const CarouselManager = () => {
                 </button>
               </div>
             </div>
+
+            {showDeleteModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg p-6 max-w-md w-full">
+                <h3 className="text-xl font-semibold mb-4">Confirm Deletion</h3>
+                <p className="mb-6">Are you sure you want to delete this carousel item? This action cannot be undone.</p>
+                <div className="flex justify-end gap-4">
+                  <button
+                    onClick={() => {
+                      setShowDeleteModal(false);
+                      setItemToDelete(null);
+                    }}
+                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
     
             {/* Add/Edit Form */}
             {showAddForm && (
@@ -334,7 +369,7 @@ const CarouselManager = () => {
                             <Edit size={16} />
                           </button>
                           <button
-                            onClick={() => handleDelete(item._id)}
+                             onClick={() => confirmDelete(item)}
                             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                           >
                             <Trash2 size={16} />

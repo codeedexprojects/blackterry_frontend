@@ -10,7 +10,7 @@ const ShopProductCard = ({ product }) => {
   const [loading, setLoading] = useState(false);
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [checkingWishlist, setCheckingWishlist] = useState(true);
-    const IMG_BASE_URL = "https://blackterry.in/uploads"
+  const IMG_BASE_URL = "https://blackterry.in/uploads"
 
 
   useEffect(() => {
@@ -30,7 +30,7 @@ const ShopProductCard = ({ product }) => {
       }
 
       const response = await getWishlist(userId);
-      
+
       if (response?.data?.items) {
         const isProductInWishlist = response.data.items.some(
           item => item.productId._id === product._id
@@ -56,11 +56,11 @@ const ShopProductCard = ({ product }) => {
   const handleAddToWishlist = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (loading || checkingWishlist) return;
-    
+
     setLoading(true);
-    
+
     try {
       const userId = localStorage.getItem("userId");
       if (!userId) {
@@ -82,14 +82,14 @@ const ShopProductCard = ({ product }) => {
       };
 
       const response = await addToWishlist(reqBody);
-      
+
       if (response.data) {
         setIsInWishlist(!isInWishlist);
-        
-        const message = isInWishlist 
+
+        const message = isInWishlist
           ? "Removed from wishlist successfully"
           : "Added to wishlist successfully";
-          
+
         toast.success(response.data.message || message, {
           position: "top-right",
           autoClose: 3000,
@@ -117,10 +117,10 @@ const ShopProductCard = ({ product }) => {
   };
 
   return (
-    <div 
+    <div
       className="col-12 col-sm-6 col-md-4 px-1 mb-2"
       data-aos="fade-up"
-      data-aos-delay={product.id % 3 * 100} 
+      data-aos-delay={product.id % 3 * 100}
       data-aos-easing="ease-out-cubic"
     >
       <Link
@@ -134,30 +134,29 @@ const ShopProductCard = ({ product }) => {
               alt={product.name}
               className="w-100 img-fluid transform group-hover:scale-105 transition-transform duration-300 ease-in-out"
               style={{ height: "400px", objectFit: "cover" }}
-              data-aos="zoom-in" 
+              data-aos="zoom-in"
             />
           </div>
-          <div 
+          <div
             className="absolute bottom-2 right-2"
-            data-aos="fade-left" 
-            data-aos-delay="300" 
+            data-aos="fade-left"
+            data-aos-delay="300"
           >
             <button
               onClick={handleAddToWishlist}
               disabled={loading || checkingWishlist}
-              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 border-0 ${
-                loading || checkingWishlist
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 border-0 ${loading || checkingWishlist
                   ? 'bg-gray-400 cursor-not-allowed'
                   : isInWishlist
-                  ? 'bg-[#5e3b25] hover:bg-[#4a2e1d] group-hover:scale-110'
-                  : 'bg-[#5e3b25] hover:bg-[#4a2e1d] group-hover:scale-110'
-              }`}
+                    ? 'bg-[#5e3b25] hover:bg-[#4a2e1d] group-hover:scale-110'
+                    : 'bg-[#5e3b25] hover:bg-[#4a2e1d] group-hover:scale-110'
+                }`}
               title={
                 checkingWishlist
                   ? "Checking wishlist..."
                   : isInWishlist
-                  ? "Remove from wishlist"
-                  : "Add to wishlist"
+                    ? "Remove from wishlist"
+                    : "Add to wishlist"
               }
             >
               {checkingWishlist ? (
@@ -170,16 +169,20 @@ const ShopProductCard = ({ product }) => {
             </button>
           </div>
         </div>
-        <div 
+        <div
           className="pt-2 pb-2 text-center"
           data-aos="fade-up"
           data-aos-delay="200"
         >
           <p className="mb-0 font-medium group-hover:text-[#5e3b25] transition-colors duration-200">
-           • {product.title}  
+            • {product.title}
           </p>
-          <p className="mb-0 font-normal text-gray-700"> ₹ {product.actualPrice}</p>
+          <div className="mb-0 font-normal text-gray-700 flex justify-center gap-2">
+            <p className="line-through text-gray-400">₹ {product.actualPrice}</p>
+            <p className="text-black font-semibold">₹ {product.offerPrice}</p>
+          </div>
         </div>
+
       </Link>
     </div>
   );

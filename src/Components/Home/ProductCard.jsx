@@ -134,10 +134,10 @@ const ProductCard = ({ product }) => {
               onClick={handleAddToWishlist}
               disabled={loading || checkingWishlist}
               className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 border-0 ${loading || checkingWishlist
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : isInWishlist
-                    ? 'bg-[#5e3b25] hover:bg-[#4a2e1d] group-hover:scale-110'
-                    : 'bg-[#5e3b25] hover:bg-[#4a2e1d] group-hover:scale-110'
+                ? 'bg-gray-400 cursor-not-allowed'
+                : isInWishlist
+                  ? 'bg-[#5e3b25] hover:bg-[#4a2e1d] group-hover:scale-110'
+                  : 'bg-[#5e3b25] hover:bg-[#4a2e1d] group-hover:scale-110'
                 }`}
               title={
                 checkingWishlist
@@ -165,8 +165,12 @@ const ProductCard = ({ product }) => {
           <p className="mb-0 font-medium group-hover:text-[#5e3b25] transition-colors duration-200">
             • {product.title}
           </p>
-          <p className="mb-0 font-normal text-gray-700"> ₹ {product.actualPrice}</p>
+          <div className="mb-0 font-normal text-gray-700 flex justify-center gap-2">
+            <p className="line-through text-gray-400">₹ {product.actualPrice}</p>
+            <p className="text-black font-semibold">₹ {product.offerPrice}</p>
+          </div>
         </div>
+
       </Link>
     </div>
   );

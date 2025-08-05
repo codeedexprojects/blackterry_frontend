@@ -157,8 +157,15 @@ const AddProductForm = () => {
       }
     });
 
-    // Add colors data
-    formDataToSend.append('colors', JSON.stringify(colors));
+    const filteredColors = colors
+      .map(color => ({
+        color: color.color,
+        sizes: color.sizes.filter(size => size.stock > 0)
+      }))
+      .filter(color => color.sizes.length > 0); 
+
+    formDataToSend.append('colors', JSON.stringify(filteredColors));
+
 
     // Add calculated total stock
     formDataToSend.append('totalStock', calculateTotalStock());
@@ -177,7 +184,7 @@ const AddProductForm = () => {
       navigate('/admin/product');
     } catch (error) {
       console.error('Error adding product:', error);
-  
+
     }
   };
   const handleCancel = () => {
