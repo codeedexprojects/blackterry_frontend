@@ -80,7 +80,7 @@ function CheckoutPage() {
     }
 
     const options = {
-      key: "rzp_test_g5f2PooYv6Hsf3",
+      key: "rzp_test_yevPNXBhcv4gP8",
       amount: orderResponse.amount,
       currency: orderResponse.currency,
       name: "BLACK TERRY",
