@@ -374,6 +374,35 @@ function Details() {
               </div>
             </div>
           </div>
+          {/* Mobile View - Horizontal Image Thumbnails */}
+          <div className="d-md-none mb-3">
+            <div className="d-flex overflow-x-auto gap-2 py-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              {product.images && product.images.length > 0 ? (
+                product.images.map((img, idx) => (
+                  <div
+                    key={idx}
+                    className="border rounded flex-shrink-0"
+                    style={{
+                      width: "80px",
+                      height: "80px",
+                      cursor: "pointer",
+                      border: mainImage === img ? "2px solid #50311D" : "1px solid #dee2e6"
+                    }}
+                    onClick={() => setMainImage(img)}
+                  >
+                    <img
+                      src={`${IMG_BASE_URL}/${img}`}
+                      alt={`Product view ${idx + 1}`}
+                      className="img-fluid w-100 h-100"
+                      style={{ objectFit: "cover" }}
+                    />
+                  </div>
+                ))
+              ) : (
+                <div className="text-muted small">No Images Available</div>
+              )}
+            </div>
+          </div>
 
 
           {/* Right side - Product Details */}
