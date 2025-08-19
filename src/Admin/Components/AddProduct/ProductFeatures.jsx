@@ -21,17 +21,15 @@ const ProductFeatures = ({ formData, handleInputChange }) => {
         </div>
         <div>
           <label className="block mb-2 text-sm font-medium">Fit</label>
-          <select
+          <input
+            type="text"
             name="features.fit"
             value={formData.features.fit}
             onChange={handleInputChange}
             className="w-full p-2 border rounded-md text-sm"
-          >
-            <option value="">Select Fit</option>
-            <option value="Regular">Regular</option>
-            <option value="Slim">Slim</option>
-            <option value="Loose">Loose</option>
-          </select>
+            placeholder="e.g., Regular, Slim"
+          />
+          
         </div>
         <div>
           <label className="block mb-2 text-sm font-medium">Material</label>
@@ -46,45 +44,37 @@ const ProductFeatures = ({ formData, handleInputChange }) => {
         </div>
         <div>
           <label className="block mb-2 text-sm font-medium">Neck Type</label>
-          <select
+          <input
+            type="text"
             name="features.neck"
             value={formData.features.neck}
             onChange={handleInputChange}
             className="w-full p-2 border rounded-md text-sm"
-          >
-            <option value="">Select Neck Type</option>
-            <option value="Round">Round</option>
-            <option value="V-Neck">V-Neck</option>
-            <option value="Collar">Collar</option>
-          </select>
+            placeholder="e.g., Round, V-Neck"
+          />
+          
         </div>
         <div>
           <label className="block mb-2 text-sm font-medium">Sleeves Type</label>
-          <select
+          <input
+            type="text"
             name="features.sleevesType"
             value={formData.features.sleevesType}
             onChange={handleInputChange}
             className="w-full p-2 border rounded-md text-sm"
-          >
-            <option value="">Select Sleeves</option>
-            <option value="Full Sleeve">Full Sleeve</option>
-            <option value="Half Sleeve">Half Sleeve</option>
-            <option value="Sleeveless">Sleeveless</option>
-          </select>
+            placeholder="e.g., Full Sleeve, Half Sleeve"
+          />
         </div>
         <div>
           <label className="block mb-2 text-sm font-medium">Length</label>
-          <select
+          <input
+            type="text"
             name="features.Length"
             value={formData.features.Length}
             onChange={handleInputChange}
             className="w-full p-2 border rounded-md text-sm"
-          >
-            <option value="">Select Length</option>
-            <option value="Regular">Regular</option>
-            <option value="Long">Long</option>
-            <option value="Short">Short</option>
-          </select>
+            placeholder="e.g., Regular, Long"
+          /> 
         </div>
         <div>
           <label className="block mb-2 text-sm font-medium">Occasion</label>

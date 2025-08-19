@@ -147,7 +147,7 @@ function Home() {
                         onClick={() => handleCarouselClick(carousel)}
                         className="bg-[#6C4A2A] hover:bg-[#5A3D22] text-white font-semibold py-3 px-8 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105"
                       >
-                        {carousel.link ? "Learn More" : "Shop Now"}
+                        {carousel.link ? "Shop Now" : "Shop Now"}
                       </button>
                     </div>
                   </div>

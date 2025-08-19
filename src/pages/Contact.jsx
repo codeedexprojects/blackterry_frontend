@@ -95,7 +95,7 @@ function Contact() {
               <div className="mb-2 d-flex align-items-center gap-2">
                 <Phone className="text-success" size={18} />
                 <a href="tel:+919847072542" className="text-dark text-decoration-none">
-                  +91 98470 72542
+                  +91 77366 95788
                 </a>
               </div>
               <div className="mb-2 d-flex align-items-center gap-2">
