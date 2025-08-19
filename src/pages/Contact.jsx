@@ -1,9 +1,34 @@
-import React from "react";
+import React, { useState } from "react";
 import Header from "/src/Components/Header";
 import Footer from "/src/Components/Footer";
-import { Mail, Phone, MapPin } from "lucide-react"; // Optional: for icons
+import { Mail, Phone, MapPin } from "lucide-react";
 
 function Contact() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: ""
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    const whatsappNumber = "917736695788"; // WhatsApp number without + or spaces
+    const message = `Name: ${formData.name}%0AEmail: ${formData.email}%0APhone: ${formData.phone}%0AMessage: ${formData.message}`;
+    
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
   return (
     <div>
       <Header />
@@ -23,69 +48,88 @@ function Contact() {
         {/* Form Section */}
         <div className="row justify-content-center">
           <div className="col-lg-10 col-md-12">
-            <div className="row g-3 mb-3">
-              <div className="col-md-6">
+            <form onSubmit={handleSubmit}>
+              <div className="row g-3 mb-3">
+                <div className="col-md-6">
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Name"
+                    className="form-control"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                    style={{
+                      padding: "15px",
+                      border: "1px solid #50311D",
+                    }}
+                  />
+                </div>
+                <div className="col-md-6">
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Email"
+                    className="form-control"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    style={{
+                      padding: "15px",
+                      border: "1px solid #50311D",
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="mb-3">
                 <input
-                  type="text"
-                  placeholder="Name"
+                  type="tel"
+                  name="phone"
+                  placeholder="Phone"
                   className="form-control"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  required
                   style={{
                     padding: "15px",
                     border: "1px solid #50311D",
                   }}
                 />
               </div>
-              <div className="col-md-6">
-                <input
-                  type="text"
-                  placeholder="Email"
+
+              <div className="mb-3">
+                <textarea
+                  name="message"
+                  placeholder="Message"
                   className="form-control"
+                  rows={4}
+                  value={formData.message}
+                  onChange={handleChange}
+                  required
                   style={{
                     padding: "15px",
                     border: "1px solid #50311D",
                   }}
-                />
+                ></textarea>
               </div>
-            </div>
 
-            <div className="mb-3">
-              <input
-                type="text"
-                placeholder="Phone"
-                className="form-control"
-                style={{
-                  padding: "15px",
-                  border: "1px solid #50311D",
-                }}
-              />
-            </div>
-
-            <div className="mb-3">
-              <textarea
-                placeholder="Message"
-                className="form-control"
-                rows={4}
-                style={{
-                  padding: "15px",
-                  border: "1px solid #50311D",
-                }}
-              ></textarea>
-            </div>
-
-            {/* Send Button */}
-            <div className="text-start mb-5">
-              <button
-                style={{
-                  backgroundColor: "#50311D",
-                  color: "white",
-                  padding: "10px 25px",
-                  border: "1px solid #50311D",
-                  borderRadius: "10px",
-                }}
-              >
-                Send
-              </button>
-            </div>
+              {/* Send Button */}
+              <div className="text-start mb-5">
+                <button
+                  type="submit"
+                  style={{
+                    backgroundColor: "#50311D",
+                    color: "white",
+                    padding: "10px 25px",
+                    border: "1px solid #50311D",
+                    borderRadius: "10px",
+                  }}
+                >
+                  Send
+                </button>
+              </div>
+            </form>
 
             {/* Contact Details */}
             <div className="mt-4 p-4 border rounded" style={{ borderColor: "#50311D" }}>
